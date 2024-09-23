@@ -1,6 +1,6 @@
 .PHONY: help
 help:
-	@echo "Make targets for vo-siav2"
+	@echo "Make targets for sia"
 	@echo "make init - Set up dev environment"
 	@echo "make run - Start a local development instance"
 	@echo "make update - Update pinned dependencies and run make init"

@@ -1,0 +1,36 @@
+<VOTABLE version="1.4" xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ivoa.net/xml/VOTable/v1.3 http://www.ivoa.net/xml/VOTable/VOTable-1.4.xsd">
+ <RESOURCE type="results">
+  <TABLE>
+   <FIELD ID="dataproduct_type" arraysize="5" datatype="unicodeChar" name="dataproduct_type"/>
+   <FIELD ID="s_ra" datatype="double" name="s_ra"/>
+   <FIELD ID="s_dec" datatype="double" name="s_dec"/>
+   <FIELD ID="s_fov" datatype="double" name="s_fov"/>
+   <FIELD ID="t_min" arraysize="10" datatype="unicodeChar" name="t_min"/>
+   <FIELD ID="t_max" arraysize="10" datatype="unicodeChar" name="t_max"/>
+   <FIELD ID="em_min" datatype="double" name="em_min"/>
+   <FIELD ID="em_max" datatype="double" name="em_max"/>
+   <FIELD ID="o_ucd" arraysize="9" datatype="unicodeChar" name="o_ucd"/>
+   <FIELD ID="access_url" arraysize="29" datatype="unicodeChar" name="access_url"/>
+   <FIELD ID="access_format" arraysize="16" datatype="unicodeChar" name="access_format"/>
+   <FIELD ID="obs_publisher_did" arraysize="17" datatype="unicodeChar" name="obs_publisher_did"/>
+   <DATA>
+    <TABLEDATA>
+     <TR>
+      <TD>image</TD>
+      <TD>180</TD>
+      <TD>-30</TD>
+      <TD>0.1</TD>
+      <TD>2020-01-01</TD>
+      <TD>2020-01-02</TD>
+      <TD>4e-07</TD>
+      <TD>7e-07</TD>
+      <TD>phot.flux</TD>
+      <TD>http://example.com/image.fits</TD>
+      <TD>application/fits</TD>
+      <TD>ivo://example/123</TD>
+     </TR>
+    </TABLEDATA>
+   </DATA>
+  </TABLE>
+ </RESOURCE>
+</VOTABLE>
