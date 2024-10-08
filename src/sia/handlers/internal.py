@@ -1,7 +1,7 @@
 """Internal HTTP handlers that serve relative to the root path, ``/``.
 
 These handlers aren't externally visible since the app is available at a path,
-``/vo-siav2``. See `vosiav2.handlers.external` for
+``/sia``. See `sia.handlers.external` for
 the external endpoint handlers.
 
 These handlers should be used for monitoring, health checks, internal status,
@@ -37,6 +37,6 @@ async def get_index() -> Metadata:
     By convention, this endpoint returns only the application's metadata.
     """
     return get_metadata(
-        package_name="vo-siav2",
+        package_name="sia",
         application_name=config.name,
     )

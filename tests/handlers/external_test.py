@@ -1,17 +1,17 @@
-"""Tests for the vosiav2.handlers.external module and routes."""
+"""Tests for the sia.handlers.external module and routes."""
 
 from __future__ import annotations
 
 import pytest
 from httpx import AsyncClient
 
-from vosiav2.config import config
+from sia.config import config
 
 
 @pytest.mark.asyncio
 async def test_get_index(client: AsyncClient) -> None:
-    """Test ``GET /vo-siav2/``."""
-    response = await client.get("/vo-siav2/")
+    """Test ``GET /sia/``."""
+    response = await client.get("/sia/")
     assert response.status_code == 200
     data = response.json()
     metadata = data["metadata"]

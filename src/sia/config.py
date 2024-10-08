@@ -10,13 +10,11 @@ __all__ = ["Config", "config"]
 
 
 class Config(BaseSettings):
-    """Configuration for vo-siav2."""
+    """Configuration for sia."""
 
-    name: str = Field("vo-siav2", title="Name of application")
+    name: str = Field("sia", title="Name of application")
 
-    path_prefix: str = Field(
-        "/vo-siav2", title="URL prefix for application"
-    )
+    path_prefix: str = Field("/sia", title="URL prefix for application")
 
     profile: Profile = Field(
         Profile.development, title="Application logging profile"
@@ -32,4 +30,4 @@ class Config(BaseSettings):
 
 
 config = Config()
-"""Configuration for vo-siav2."""
+"""Configuration for sia."""

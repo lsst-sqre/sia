@@ -1,4 +1,4 @@
-"""Models for vo-siav2."""
+"""Models for sia."""
 
 from pydantic import BaseModel, Field
 from safir.metadata import Metadata as SafirMetadata

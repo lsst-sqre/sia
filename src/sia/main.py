@@ -1,4 +1,4 @@
-"""The main application factory for the vo-siav2 service.
+"""The main application factory for the sia service.
 
 Notes
 -----
@@ -37,20 +37,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 configure_logging(
     profile=config.profile,
     log_level=config.log_level,
-    name="vosiav2",
+    name="sia",
 )
 configure_uvicorn_logging(config.log_level)
 
 app = FastAPI(
-    title="vo-siav2",
-    description=metadata("vo-siav2")["Summary"],
-    version=version("vo-siav2"),
+    title="sia",
+    description=metadata("sia")["Summary"],
+    version=version("sia"),
     openapi_url=f"{config.path_prefix}/openapi.json",
     docs_url=f"{config.path_prefix}/docs",
     redoc_url=f"{config.path_prefix}/redoc",
     lifespan=lifespan,
 )
-"""The main FastAPI application for vo-siav2."""
+"""The main FastAPI application for sia."""
 
 # Attach the routers.
 app.include_router(internal_router)

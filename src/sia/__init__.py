@@ -1,4 +1,4 @@
-"""The vo-siav2 service."""
+"""The sia service."""
 
 __all__ = ["__version__"]
 
@@ -8,7 +8,7 @@ __version__: str
 """The application version string (PEP 440 / SemVer compatible)."""
 
 try:
-    __version__ = version("vo-siav2")
+    __version__ = version("sia")
 except PackageNotFoundError:
     # package is not installed
     __version__ = "0.0.0"

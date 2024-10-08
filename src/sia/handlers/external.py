@@ -1,4 +1,4 @@
-"""Handlers for the app's external root, ``/vo-siav2/``."""
+"""Handlers for the app's external root, ``/sia/``."""
 
 from typing import Annotated
 
@@ -29,12 +29,12 @@ external_router = APIRouter()
 async def get_index(
     logger: Annotated[BoundLogger, Depends(logger_dependency)],
 ) -> Index:
-    """GET ``/vo-siav2/`` (the app's external root).
+    """GET ``/sia/`` (the app's external root).
 
     Customize this handler to return whatever the top-level resource of your
     application should return. For example, consider listing key API URLs.
     When doing so, also change or customize the response model in
-    `vosiav2.models.Index`.
+    `sia.models.Index`.
 
     By convention, the root of the external API includes a field called
     ``metadata`` that provides the same Safir-generated metadata as the
@@ -46,7 +46,7 @@ async def get_index(
     logger.info("Request for application metadata")
 
     metadata = get_metadata(
-        package_name="vo-siav2",
+        package_name="sia",
         application_name=config.name,
     )
     return Index(metadata=metadata)
