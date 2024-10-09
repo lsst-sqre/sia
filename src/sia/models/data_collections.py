@@ -18,7 +18,7 @@ class ButlerDataCollection:
     label: str
     defaultinstrument: str
     default: bool = False
-    datalinkurl: str | None = None
+    datalinkurl: HttpUrl | None = None
 
     def get_identifier(self) -> str:
         """Get the identifier for the data collection.
@@ -47,7 +47,7 @@ class ButlerDataCollection:
                 # We normally should find the datalink_url_fmt attribute
                 # If it doesn't exist this doesn't seem to be a critical issue
                 # so we suppress the AttributeError
-                exporter_config.dataset_types[
-                    name
-                ].datalink_url_fmt = self.datalinkurl
+                exporter_config.dataset_types[name].datalink_url_fmt = str(
+                    self.datalinkurl
+                )
         return exporter_config
