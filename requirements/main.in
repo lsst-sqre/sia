@@ -11,8 +11,21 @@
 fastapi
 starlette
 uvicorn[standard]
+python-multipart
 
 # Other dependencies.
+boto3
+google-cloud-storage
+requests
+jinja2
 pydantic
 pydantic-settings
 safir>=5
+psycopg2-binary
+numpy
+astropy
+vo-models
+defusedxml
+lsst-daf-butler[postgres,remote]
+lsst-resources[s3,gs]
+lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore@main#egg=lsst-dax-obscore

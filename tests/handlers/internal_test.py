@@ -1,11 +1,11 @@
-"""Tests for the vosiav2.handlers.internal module and routes."""
+"""Tests for the sia.handlers.internal module and routes."""
 
 from __future__ import annotations
 
 import pytest
 from httpx import AsyncClient
 
-from vosiav2.config import config
+from sia.config import config
 
 
 @pytest.mark.asyncio
