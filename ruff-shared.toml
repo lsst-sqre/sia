@@ -125,6 +125,7 @@ select = ["ALL"]
 builtins-ignorelist = [
     "all",
     "any",
+    "format",
     "help",
     "id",
     "list",
