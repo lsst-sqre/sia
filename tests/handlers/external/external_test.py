@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Any
 
 import pytest
+from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
 from sia.config import config
@@ -223,3 +225,32 @@ async def test_query_endpoint_post(
         )
     elif expected_status == 400:
         validate_votable_error(response, expected_message)
+
+
+@pytest.mark.asyncio
+async def test_query_maxrec_zero(
+    client_direct: AsyncClient,
+) -> None:
+    response = await client_direct.get(
+        f"{config.path_prefix}/hsc/query?MAXREC=0"
+    )
+
+    template_dir = str(
+        Path(__file__).resolve().parent.parent.parent / "templates"
+    )
+    templates_dir = Jinja2Templates(template_dir)
+
+    context = {
+        "instruments": ["HSC"],
+        "collections": ["LSST.CI"],
+        "resource_identifier": "ivo://rubin//ci_hsc_gen3hsc",
+        "access_url": "https://example.com/api/sia/hsc/query",
+        "facility_name": "Subaru",
+    }
+
+    template_rendered = templates_dir.get_template(
+        "self_description.xml"
+    ).render(context)
+
+    assert response.status_code == 200
+    assert response.text.strip() == template_rendered.strip()

@@ -13,3 +13,6 @@ SINGLE_PARAMS = {
     "responseformat",
 }
 """Parameters that should be treated as single values."""
+
+BASE_RESOURCE_IDENTIFIER = "ivo://rubin/"
+"""The base resource identifier for any rubin SIA service."""

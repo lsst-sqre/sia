@@ -1,15 +1,18 @@
 """Module for the Query Processor service."""
 
 from collections.abc import Callable
+from pathlib import Path
 
 import astropy
 import structlog
 from fastapi import Request
+from fastapi.templating import Jinja2Templates
 from lsst.daf.butler import Butler
 from lsst.dax.obscore import ExporterConfig
 from lsst.dax.obscore.siav2 import SIAv2Parameters
 from starlette.responses import Response
 
+from ..constants import BASE_RESOURCE_IDENTIFIER
 from ..constants import RESULT_NAME as RESULT
 from ..factory import Factory
 from ..models.data_collections import ButlerDataCollection
@@ -22,9 +25,66 @@ SIAv2QueryType = Callable[
     astropy.io.votable.tree.VOTableFile,
 ]
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+_TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
+
 
 class ResponseHandlerService:
     """Service for handling the SIAv2 query response."""
+
+    @staticmethod
+    def self_description_response(
+        request: Request,
+        butler: Butler,
+        obscore_config: ExporterConfig,
+        butler_collection: ButlerDataCollection,
+    ) -> Response:
+        """Return a self-description response for the SIAv2 service.
+        This should provide metadata about the expected parameters and return
+        values for the service.
+
+        Parameters
+        ----------
+        request
+            The request object.
+        butler
+            The Butler instance.
+        obscore_config
+            The ObsCore configuration.
+        butler_collection
+            The Butler data collection.
+
+        Returns
+        -------
+        Response
+            The response containing the self-description.
+        """
+        return _TEMPLATES.TemplateResponse(
+            request,
+            "self_description.xml",
+            {
+                "request": request,
+                "instruments": [
+                    rec.name
+                    for rec in butler.query_dimension_records("instrument")
+                ],
+                "collections": [obscore_config.obs_collection],
+                # This may need to be updated if we decide to change the
+                # dax_obscore config to hold multiple collections
+                "resource_identifier": f"{BASE_RESOURCE_IDENTIFIER}/"
+                f"{butler_collection.label}"
+                f"{butler_collection.name}",
+                "access_url": request.url_for(
+                    "query", collection_name=butler_collection.name
+                ),
+                "facility_name": obscore_config.facility_name.strip(),
+            },
+            headers={
+                "content-disposition": f"attachment; filename={RESULT}.xml",
+                "Content-Type": "application/x-votable+xml",
+            },
+            media_type="application/x-votable+xml",
+        )
 
     @staticmethod
     def process_query(
@@ -68,11 +128,20 @@ class ResponseHandlerService:
             butler_collection=collection,
             token=token,
         )
+        obscore_config = factory.create_obscore_config(collection.label)
+
+        if params.maxrec == 0:
+            return ResponseHandlerService.self_description_response(
+                request=request,
+                butler=butler,
+                obscore_config=obscore_config,
+                butler_collection=collection,
+            )
 
         # Execute the query
         table_as_votable = sia_query(
             butler,
-            collection.get_exporter_config(),
+            obscore_config,
             params,
         )
 

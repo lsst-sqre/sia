@@ -16,6 +16,7 @@ from structlog.stdlib import BoundLogger
 from ..config import Config
 from ..factory import Factory
 from .labeled_butler_factory import labeled_butler_factory_dependency
+from .obscore_configs import obscore_config_dependency
 
 __all__ = [
     "ContextDependency",
@@ -96,6 +97,7 @@ class ContextDependency:
             logger=logger,
             config=self._config,
             labeled_butler_factory=await labeled_butler_factory_dependency(),
+            obscore_configs=await obscore_config_dependency(),
         )
 
     async def aclose(self) -> None:

@@ -5,6 +5,7 @@ from __future__ import annotations
 import structlog
 from lsst.daf.butler import Butler, LabeledButlerFactory
 from lsst.daf.butler.registry import RegistryDefaults
+from lsst.dax.obscore import ExporterConfig
 from structlog.stdlib import BoundLogger
 
 from .config import Config
@@ -26,6 +27,8 @@ class Factory:
         The configuration instance
     labeled_butler_factory
         The LabeledButlerFactory singleton
+    obscore_configs
+        The Obscore configurations
     logger
         The logger instance
     """
@@ -34,10 +37,12 @@ class Factory:
         self,
         config: Config,
         labeled_butler_factory: LabeledButlerFactory,
+        obscore_configs: dict[str, ExporterConfig],
         logger: BoundLogger | None = None,
     ) -> None:
         self._config = config
         self._labeled_butler_factory = labeled_butler_factory
+        self._obscore_configs = obscore_configs
         self._logger = (
             logger if logger else structlog.get_logger(self._config.name)
         )
@@ -70,6 +75,21 @@ class Factory:
             instrument=butler_collection.default_instrument,
         )
         return butler
+
+    def create_obscore_config(self, label: str) -> ExporterConfig:
+        """Create an Obscore config object for a given label.
+
+        Parameters
+        ----------
+        label
+            The label for the Obscore config.
+
+        Returns
+        -------
+        ExporterConfig
+            The Obscore config.
+        """
+        return self._obscore_configs[label]
 
     def create_data_collection_service(self) -> DataCollectionService:
         """Create a data collection service.

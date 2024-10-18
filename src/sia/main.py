@@ -27,6 +27,7 @@ from .dependencies.context import context_dependency
 from .dependencies.labeled_butler_factory import (
     labeled_butler_factory_dependency,
 )
+from .dependencies.obscore_configs import obscore_config_dependency
 from .errors import votable_exception_handler
 from .exceptions import VOTableError
 from .handlers.external import external_router
@@ -44,14 +45,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Set up and tear down the application."""
     logger.debug("SIA has started up.")
     await labeled_butler_factory_dependency.initialize(config=config)
+    await obscore_config_dependency.initialize(config=config)
     await context_dependency.initialize(config=config)
 
     yield
 
     await labeled_butler_factory_dependency.aclose()
+    await obscore_config_dependency.aclose()
     await context_dependency.aclose()
-    logger.debug("SIA shut down complete.")
     await http_client_dependency.aclose()
+    logger.debug("SIA shut down complete.")
 
 
 configure_logging(
