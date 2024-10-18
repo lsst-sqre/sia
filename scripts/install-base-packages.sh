@@ -26,6 +26,9 @@ apt-get update
 # Install security updates:
 apt-get -y upgrade
 
+# libpq-dev is required by psycopg2.
+apt-get -y install --no-install-recommends curl unzip libpq-dev
+
 # Example of installing a new package, without unnecessary packages:
 apt-get -y install --no-install-recommends git
 
