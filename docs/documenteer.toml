@@ -1,0 +1,8 @@
+[project]
+title = "SIA"
+copyright = "2024 Association of Universities for Research in Astronomy, Inc. (AURA)"
+base_url="https://sia.lsst.io"
+github_url="https://github.com/lsst-sqre/sia"
+
+[project.python]
+package = "sia"
