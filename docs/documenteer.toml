@@ -4,5 +4,9 @@ copyright = "2024 Association of Universities for Research in Astronomy, Inc. (A
 base_url="https://sia.lsst.io"
 github_url="https://github.com/lsst-sqre/sia"
 
+[project.openapi]
+openapi_path = "_static/openapi.json"
+doc_path = "api"
+
 [project.python]
 package = "sia"

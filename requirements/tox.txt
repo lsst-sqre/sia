@@ -40,6 +40,7 @@ platformdirs==4.3.6 \
     --hash=sha256:357fb2acbc885b0419afd3ce3ed34564c13c9b95c89360cd9563f73aa5e2b907 \
     --hash=sha256:73e575e1408ab8103900836b97580d5307456908a03e92031bab39e4554cc3fb
     # via
+    #   -c requirements/dev.txt
     #   tox
     #   virtualenv
 pluggy==1.5.0 \

@@ -9,17 +9,15 @@
 ###########
 SIA
 ###########
+SIA is an implementation of the IVOA `Simple Image Access v2`_ protocol as a `FastAPI`_ web service, designed to be deployed as part of the Rubin Science Platform through `Phalanx`_.
 
-SIA is an implementation of the IVOA [Simple Image Access v2](https://www.ivoa.net/documents/SIA/20150610/PR-SIA-2.0-20150610.pdf) protocol as a [FastAPI](https://fastapi.tiangolo.com/) web service, designed to be deployed as part of the Rubin Science Platform.
+The default configuration uses the `dax_obscore`_ package and interacts with a `Butler`_ repository to find images matching specific criteria.
 
-The default configuration uses the [dax_obscore](https://github.com/lsst-dm/dax_obscore) package and interacts with a [Butler](https://github.com/lsst/daf_butler) repository to find images matching specific criteria.
-
-While the current release supports both remote and direct (local) Butler repositories, our primary focus has been on the Remote Butler, resulting in more mature support for this option.
+While the current release supports both remote and direct (local) Butler repositories, our primary focus has been on the Remote Butler use-case, resulting in more mature support for this option.
 
 The application expects as part of the configuration a list of Butler Data Collections, each of which expects a number of attributes which define how to access the repository.
 
-SIA is developed on `GitHub <https://github.com/lsst-sqre/sia>`__.
-It is deployed via Phalanx_.
+SIA is developed on `SIA`_. It is deployed via Phalanx.
 
 The system architecture & design considerations have been documented in https://github.com/lsst-sqre/sqr-095.
 
@@ -37,3 +35,9 @@ The system architecture & design considerations have been documented in https://
 
       Learn how to setup the application.
 
+.. _Simple Image Access v2: https://www.ivoa.net/documents/SIA/
+.. _FastAPI: https://fastapi.tiangolo.com/
+.. _Phalanx: https://github.com/lsst-sqre/phalanx
+.. _dax_obscore: https://github.com/lsst-dm/dax_obscore
+.. _Butler: https://github.com/lsst/daf_butler
+.. _SIA: https://github.com/lsst-sqre/sia>
