@@ -36,14 +36,14 @@ update: update-deps init
 
 .PHONY: update-deps
 update-deps:
-	pip install --upgrade uv
-	uv pip install --upgrade pre-commit
-	pre-commit autoupdate
-	uv pip compile --upgrade --generate-hashes			\
+#	pip install --upgrade uv
+#	uv pip install --upgrade pre-commit
+#	pre-commit autoupdate
+	uv pip compile --generate-hashes			\
 	    --output-file requirements/main.txt requirements/main.in
-	uv pip compile --upgrade --generate-hashes			\
+	uv pip compile --generate-hashes			\
 	    --output-file requirements/dev.txt requirements/dev.in
-	uv pip compile --upgrade --generate-hashes			\
+	uv pip compile --generate-hashes			\
 	    --output-file requirements/tox.txt requirements/tox.in
 
 # Useful for testing against a Git version of Safir.

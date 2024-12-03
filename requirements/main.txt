@@ -118,6 +118,7 @@ certifi==2024.8.30 \
     #   httpcore
     #   httpx
     #   requests
+    #   sentry-sdk
 cffi==1.17.1 \
     --hash=sha256:045d61c734659cc045141be4bae381a41d89b741f795af1dd018bfb532fd0df8 \
     --hash=sha256:0984a4925a435b1da406122d4d7968dd861c1385afe3b45ba82b750f229811e2 \
@@ -652,12 +653,7 @@ jsonschema-specifications==2024.10.1 \
     --hash=sha256:0f38b83639958ce1152d02a7f062902c41c8fd20d558b0c34344292d417ae272 \
     --hash=sha256:a09a0680616357d9a0ecf05c12ad234479f549239d0f5b55f3deea67475da9bf
     # via jsonschema
-lsst-daf-butler==28.2024.4700 \
-    --hash=sha256:496ab057c9d08cdffbfba6801ad95d9936355a8595e99e9d0767f2f9fb3c65f9 \
-    --hash=sha256:6d3a46859eda595a00d509b215885b6f1396f8b4238ebd4397f43a066f009fc3
-    # via
-    #   -r requirements/main.in
-    #   lsst-dax-obscore
+lsst-daf-butler @ git+https://github.com/lsst/daf_butler@tickets/DM-47889#egg=lsst-daf-butler
 lsst-daf-relation==28.2024.4700 \
     --hash=sha256:95258dd08762212d9f6a8c0c0f55425ba12c893a0e5128463b5990b90e9dda9e \
     --hash=sha256:969425558a55832b36142d03ce27c01df2275ca905ad1df040ea6f3ee60cc054
@@ -1451,6 +1447,10 @@ safir-logging==6.5.1 \
     --hash=sha256:b056306de26627e29bd6a6d04b1144456a1319ec0e15a67ebbc12b43362a27cd \
     --hash=sha256:ff591f0247fda10842835e714a6dbf601a894432d33d6d98e20fe035a5ad952c
     # via safir
+sentry-sdk==2.18.0 \
+    --hash=sha256:0dc21febd1ab35c648391c664df96f5f79fb0d92d7d4225cd9832e53a617cafd \
+    --hash=sha256:ee70e27d1bbe4cd52a38e1bd28a5fadb9b17bc29d91b5f2b97ae29c0a7610442
+    # via -r requirements/main.in
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254

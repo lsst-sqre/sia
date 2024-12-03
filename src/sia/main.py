@@ -33,6 +33,7 @@ from .exceptions import VOTableError
 from .handlers.external import external_router
 from .handlers.internal import internal_router
 from .middleware.ivoa import CaseInsensitiveFormMiddleware
+from .telemetry import enable_telemetry
 
 __all__ = ["app"]
 
@@ -63,6 +64,7 @@ configure_logging(
     name="sia",
 )
 configure_uvicorn_logging(config.log_level)
+enable_telemetry()
 
 app = FastAPI(
     title="sia",
