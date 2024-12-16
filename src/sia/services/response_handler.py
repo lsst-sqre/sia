@@ -16,6 +16,7 @@ from ..constants import BASE_RESOURCE_IDENTIFIER
 from ..constants import RESULT_NAME as RESULT
 from ..factory import Factory
 from ..models.data_collections import ButlerDataCollection
+from ..models.sia_query_params import BandInfo
 from ..services.votable import VotableConverterService
 
 logger = structlog.get_logger(__name__)
@@ -31,6 +32,34 @@ _TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 class ResponseHandlerService:
     """Service for handling the SIAv2 query response."""
+
+    @staticmethod
+    def _generate_band_info(
+        spectral_ranges: dict[str, tuple[float | None, float | None]],
+    ) -> list[BandInfo]:
+        """Generate band information from spectral ranges dictionary.
+
+        Parameters
+        ----------
+        spectral_ranges
+            The spectral ranges dictionary.
+
+        Returns
+        -------
+        list[BandInfo]
+            The list of BandInfo objects.
+        """
+        bands = []
+        for band_name, (low, high) in spectral_ranges.items():
+            if low is not None and high is not None:
+                # The Rubin label is hardcoded here, but it could be
+                # parameterized if needed in the future.
+                bands.append(
+                    BandInfo(
+                        label=f"Rubin band {band_name}", low=low, high=high
+                    )
+                )
+        return bands
 
     @staticmethod
     def self_description_response(
@@ -59,6 +88,10 @@ class ResponseHandlerService:
         Response
             The response containing the self-description.
         """
+        bands = ResponseHandlerService._generate_band_info(
+            obscore_config.spectral_ranges
+        )
+
         return _TEMPLATES.TemplateResponse(
             request,
             "self_description.xml",
@@ -77,6 +110,7 @@ class ResponseHandlerService:
                     "query", collection_name=butler_collection.name
                 ),
                 "facility_name": obscore_config.facility_name.strip(),
+                "bands": bands,
             },
             headers={
                 "content-disposition": f"attachment; filename={RESULT}.xml",
