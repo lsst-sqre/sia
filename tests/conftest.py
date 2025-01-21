@@ -148,7 +148,7 @@ async def test_config_remote() -> Config:
             label="LSST.DP02",
             name="dp02",
             repository=HttpUrl(
-                "https://example.com/api/butler/repo/dp02/butler" ".yaml"
+                "https://example.com/api/butler/repo/dp02/butler.yaml"
             ),
             butler_type=ButlerType.REMOTE,
         ),
