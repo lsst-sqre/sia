@@ -17,7 +17,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
 from safir.dependencies.http_client import http_client_dependency
 from safir.logging import configure_logging, configure_uvicorn_logging
-from safir.middleware.ivoa import CaseInsensitiveQueryMiddleware
+from safir.middleware.ivoa import (
+    CaseInsensitiveFormMiddleware,
+    CaseInsensitiveQueryMiddleware,
+)
 from safir.middleware.x_forwarded import XForwardedMiddleware
 from safir.slack.webhook import SlackRouteErrorHandler
 from structlog import get_logger
@@ -32,7 +35,6 @@ from .errors import votable_exception_handler
 from .exceptions import VOTableError
 from .handlers.external import external_router
 from .handlers.internal import internal_router
-from .middleware.ivoa import CaseInsensitiveFormMiddleware
 
 __all__ = ["app"]
 

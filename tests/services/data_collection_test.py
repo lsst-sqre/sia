@@ -23,9 +23,9 @@ async def test_get_data_repositories(test_config_remote: Config) -> None:
         config=test_config_remote
     ).get_data_repositories()
 
-    assert (
-        result == expected_repos
-    ), f"Expected {expected_repos}, but got {result}"
+    assert result == expected_repos, (
+        f"Expected {expected_repos}, but got {result}"
+    )
     assert len(result) == 1, f"Expected 1 repository, but got {len(result)}"
     assert "LSST.DP02" in result, "Expected 'LSST.DP02' to be in the result"
     assert result["LSST.DP02"] == (
