@@ -41,10 +41,45 @@ class Config(BaseSettings):
     ]
     """Configuration for the data collections."""
 
+    environment_name: Annotated[
+        str,
+        Field(
+            alias="SIA_ENVIRONMENT_NAME",
+            description=(
+                "The Phalanx name of the Rubin Science Platform environment."
+            ),
+        ),
+    ]
+    """The environment name in Phalanx."""
+
     slack_webhook: Annotated[
         HttpUrl | None, Field(title="Slack webhook for exception reporting")
     ] = None
     """Slack webhook for exception reporting."""
+
+    sentry_dsn: Annotated[
+        str | None,
+        Field(
+            alias="SIA_SENTRY_DSN",
+            description="DSN for sending events to Sentry.",
+        ),
+    ] = None
+    """DSN for sending events to Sentry."""
+
+    sentry_traces_sample_rate: Annotated[
+        float,
+        Field(
+            alias="SIA_SENTRY_TRACES_SAMPLE_RATE",
+            description=(
+                "The percentage of transactions to send to Sentry, expressed "
+                "as a float between 0 and 1. 0 means send no traces, 1 means "
+                "send every trace."
+            ),
+            ge=0,
+            le=1,
+        ),
+    ] = 0
+    """The percentage of transactions to send to Sentry."""
 
     @model_validator(mode="after")
     def _validate_butler_data_collections(self) -> Self:
