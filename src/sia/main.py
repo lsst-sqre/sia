@@ -35,11 +35,13 @@ from .errors import votable_exception_handler
 from .exceptions import VOTableError
 from .handlers.external import external_router
 from .handlers.internal import internal_router
+from .sentry import enable_sentry
 
 __all__ = ["app"]
 
 
 logger = get_logger(__name__)
+enable_sentry()
 
 
 @asynccontextmanager

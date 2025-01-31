@@ -26,5 +26,6 @@ numpy
 astropy
 vo-models
 defusedxml
+sentry-sdk
 lsst-daf-butler[postgres, remote]
 lsst-dax-obscore
