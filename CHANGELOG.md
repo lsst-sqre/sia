@@ -7,6 +7,15 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.1.6'></a>
+## 0.1.6  (2025-01-31)
+
+### New features
+
+- Now reads bands information from obscore config
+- Fix some of the self-descirption documentation (calibs and remove specify statements)
+- Enable Sentry telemetry
+
 <a id='changelog-0.1.5'></a>
 ## 0.1.5  (2024-12-21)
 
