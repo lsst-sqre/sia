@@ -5,16 +5,18 @@
   <RESOURCE type="meta" utype="adhoc:this">
     <DESCRIPTION>Self description and list of supported parameters</DESCRIPTION>
     <GROUP name="inputParams">
-      <PARAM name="BAND" datatype="double" arraysize="2" unit="m" xtype="interval">
-        <DESCRIPTION>Energy bounds</DESCRIPTION>
+      <PARAM name="BAND" datatype="float" arraysize="2*" xtype="interval">
+        <DESCRIPTION>Wavelength/filter band selection</DESCRIPTION>
+        {%- for band in bands %}
+        <OPTION name="{{ band.label }}" value="{{ band.formatted_midpoint }}"/>
+        {%- endfor %}
       </PARAM>
       <PARAM name="CALIB" datatype="int" arraysize="*">
         <DESCRIPTION>Calibration level</DESCRIPTION>
         <VALUES type="actual">
-          <OPTION value="0"/>
-          <OPTION value="1"/>
-          <OPTION value="2"/>
-          <OPTION value="3"/>
+          <OPTION value="1" name="Raw Data"/>
+          <OPTION value="2" name="PVIs"/>
+          <OPTION value="3" name="Coadds and Difference Images"/>
         </VALUES>
       </PARAM>
       <PARAM name="COLLECTION" datatype="char" arraysize="*">
@@ -81,10 +83,10 @@
         </VALUES>
       </PARAM>
       <PARAM name="SPATRES" datatype="double" arraysize="2" unit="arcsec" xtype="interval">
-        <DESCRIPTION>Specify position resolution</DESCRIPTION>
+        <DESCRIPTION>Position resolution</DESCRIPTION>
       </PARAM>
       <PARAM name="SPECRP" datatype="double" arraysize="2" xtype="interval">
-        <DESCRIPTION>Specify energy resolving power</DESCRIPTION>
+        <DESCRIPTION>Energy resolving power</DESCRIPTION>
       </PARAM>
       <PARAM name="TARGET" datatype="char" arraysize="*">
         <DESCRIPTION>Target name</DESCRIPTION>
@@ -121,7 +123,7 @@
         <DESCRIPTION>Product type (e.g. science, calibration, auxiliary, preview, info)</DESCRIPTION>
       </FIELD>
       <FIELD name="calib_level" datatype="short" ucd="meta.code;obs.calib" utype="obscore:obsdataset.caliblevel">
-        <DESCRIPTION>Calibration level of the observation: in {0, 1, 2, 3, 4}</DESCRIPTION>
+        <DESCRIPTION>Calibration level of the observation: in {1, 2, 3}</DESCRIPTION>
       </FIELD>
       <FIELD name="dataproduct_type" datatype="char" arraysize="*" ucd="meta.id" utype="obscore:obsdataset.dataproducttype">
         <DESCRIPTION>Data product (file content) primary type</DESCRIPTION>

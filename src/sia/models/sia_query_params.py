@@ -14,6 +14,7 @@ from ..exceptions import UsageFaultError
 from ..models.common import CaseInsensitiveEnum
 
 __all__ = [
+    "BandInfo",
     "BaseQueryParams",
     "CalibLevel",
     "DPType",
@@ -64,6 +65,48 @@ class Polarization(CaseInsensitiveEnum):
     YY = "YY"
     XY = "XY"
     YX = "YX"
+
+
+@dataclass
+class BandInfo:
+    """A class to represent a band's wavelength range.
+
+    Attributes
+    ----------
+    label
+        The band's label.
+    low
+        The low end of the band's wavelength range.
+    high
+        The high end of the band's wavelength range.
+    """
+
+    label: str
+    low: float
+    high: float
+
+    @property
+    def midpoint(self) -> float:
+        """Calculate the midpoint of the band's wavelength range.
+
+        Returns
+        -------
+        float
+            The midpoint of the band's wavelength range
+        """
+        return (self.low + self.high) / 2
+
+    @property
+    def formatted_midpoint(self) -> str:
+        """Return the midpoint formatted in scientific notation.
+
+        Returns
+        -------
+        str
+            The midpoint formatted in scientific notation
+        """
+        nm_value = self.midpoint * 1e9
+        return f"{nm_value:.1f}e-9"
 
 
 class BaseQueryParams(ABC):

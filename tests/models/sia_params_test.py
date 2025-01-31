@@ -6,6 +6,7 @@ import pytest
 
 from sia.models.common import CaseInsensitiveEnum
 from sia.models.sia_query_params import (
+    BandInfo,
     CalibLevel,
     DPType,
     Polarization,
@@ -133,6 +134,64 @@ async def test_sia_params_default_values() -> None:
     assert params.instrument is None
     assert params.maxrec == 0
     assert params.responseformat is None
+
+
+def test_band_info_initialization() -> None:
+    """Test proper initialization of BandInfo."""
+    band = BandInfo(label="Rubin band u", low=330.0e-9, high=400.0e-9)
+    assert band.label == "Rubin band u"
+    assert band.low == 330.0e-9
+    assert band.high == 400.0e-9
+
+
+def test_band_info_midpoint_calculation() -> None:
+    """Test midpoint calculations for different bands."""
+    band_u = BandInfo(label="Rubin band u", low=330.0e-9, high=400.0e-9)
+    expected_u_midpoint = (330.0e-9 + 400.0e-9) / 2
+    assert band_u.midpoint == expected_u_midpoint
+
+    band_y = BandInfo(label="Rubin band y", low=970.0e-9, high=1060.0e-9)
+    expected_y_midpoint = (970.0e-9 + 1060.0e-9) / 2
+    assert band_y.midpoint == expected_y_midpoint
+
+
+def test_band_info_formatted_midpoint() -> None:
+    """Test formatted midpoint string representations."""
+    test_cases = [
+        {
+            "label": "Rubin band u",
+            "low": 330.0e-9,
+            "high": 400.0e-9,
+            "expected": "365.0e-9",
+        },
+        {
+            "label": "Rubin band g",
+            "low": 402.0e-9,
+            "high": 552.0e-9,
+            "expected": "477.0e-9",
+        },
+        {
+            "label": "Rubin band y",
+            "low": 970.0e-9,
+            "high": 1060.0e-9,
+            "expected": "1015.0e-9",
+        },
+    ]
+
+    for case in test_cases:
+        low = (
+            float(case["low"])
+            if isinstance(case["low"], (int | float))
+            else 0.0
+        )
+        high = (
+            float(case["high"])
+            if isinstance(case["high"], (int | float))
+            else 0.0
+        )
+
+        band = BandInfo(label=str(case["label"]), low=low, high=high)
+        assert band.formatted_midpoint == case["expected"]
 
 
 @pytest.fixture

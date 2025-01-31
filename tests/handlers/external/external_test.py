@@ -12,6 +12,7 @@ from httpx import AsyncClient
 
 from sia.config import config
 from sia.constants import RESULT_NAME
+from sia.models.sia_query_params import BandInfo
 from tests.support.butler import MockButler, MockButlerQueryService
 from tests.support.constants import EXCEPTION_MESSAGES
 from tests.support.validators import validate_votable_error
@@ -240,12 +241,29 @@ async def test_query_maxrec_zero(
     )
     templates_dir = Jinja2Templates(template_dir)
 
+    bands = [
+        BandInfo(label="Rubin band HSC-G", low=406.0e-9, high=545.0e-9),
+        BandInfo(label="Rubin band HSC-R", low=543.0e-9, high=693.0e-9),
+        BandInfo(label="Rubin band HSC-R2", low=542.0e-9, high=693.0e-9),
+        BandInfo(label="Rubin band HSC-I", low=690.0e-9, high=842.0e-9),
+        BandInfo(label="Rubin band HSC-I2", low=692.0e-9, high=850.0e-9),
+        BandInfo(label="Rubin band HSC-Z", low=852.0e-9, high=928.0e-9),
+        BandInfo(label="Rubin band HSC-Y", low=937.0e-9, high=1015.0e-9),
+        BandInfo(label="Rubin band N921", low=914.7e-9, high=928.1e-9),
+        BandInfo(label="Rubin band g", low=406.0e-9, high=545.0e-9),
+        BandInfo(label="Rubin band r", low=542.0e-9, high=693.0e-9),
+        BandInfo(label="Rubin band i", low=692.0e-9, high=850.0e-9),
+        BandInfo(label="Rubin band z", low=852.0e-9, high=928.0e-9),
+        BandInfo(label="Rubin band y", low=937.0e-9, high=1015.0e-9),
+    ]
+
     context = {
         "instruments": ["HSC"],
         "collections": ["LSST.CI"],
         "resource_identifier": "ivo://rubin//ci_hsc_gen3",
         "access_url": "https://example.com/api/sia/hsc/query",
         "facility_name": "Subaru",
+        "bands": bands,
     }
 
     template_rendered = templates_dir.get_template(
