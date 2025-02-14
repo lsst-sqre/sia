@@ -1,6 +1,11 @@
 """Constants for the SIA service."""
 
-__all__ = ["RESPONSEFORMATS", "RESULT_NAME", "SINGLE_PARAMS"]
+__all__ = [
+    "BASE_RESOURCE_IDENTIFIER",
+    "RESPONSEFORMATS",
+    "RESULT_NAME",
+    "SINGLE_PARAMS",
+]
 
 RESPONSEFORMATS = {"votable", "application/x-votable"}
 """List of supported response formats for the SIA service."""

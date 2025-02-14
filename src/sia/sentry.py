@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from re import Pattern
 from typing import Any
 
+import sentry_sdk
 from safir.sentry import before_send_handler
+from sentry_sdk.tracing import Span
 
 from .config import config
 
-__all__ = ["enable_sentry", "make_traces_sampler"]
+__all__ = ["capturing_start_span", "enable_sentry", "make_traces_sampler"]
 
 
 def enable_sentry() -> None:
@@ -90,3 +93,36 @@ def make_traces_sampler(
         return original_rate
 
     return traces_sampler
+
+
+@contextmanager
+def capturing_start_span(op: str, **kwargs: Any) -> Generator[Span]:
+    """Start a span, set the op/start time in the context, and capture errors.
+
+    Setting the op and start time in the context will propagate it to any error
+    events that get sent to Sentry, event if the trace does not get sent.
+
+    Explicitly capturing errors in the span will tie the Sentry events to this
+    specific span, rather than tying them to the span/transaction where they
+    would be handled otherwise.
+    """
+    with sentry_sdk.start_span(op=op, **kwargs) as span:
+        sentry_sdk.get_isolation_scope().set_context(
+            "phase", {"phase": op, "started_at": span.start_timestamp}
+        )
+        sentry_sdk.get_isolation_scope().set_tag("phase", op)
+
+        # You can't see the time a span started in the Sentry UI, only the time
+        # the entire transaction started
+        span.set_tag("started_at", span.start_timestamp)
+
+        try:
+            yield span
+        except Exception as e:
+            # Even though we're capturing exceptions at the business level,
+            # Sentry knows not to send them twice.
+            sentry_sdk.capture_exception(e)
+            raise
+        finally:
+            sentry_sdk.get_isolation_scope().remove_context("phase")
+            sentry_sdk.get_isolation_scope().remove_tag("phase")
