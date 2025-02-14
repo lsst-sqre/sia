@@ -17,6 +17,7 @@ from ..constants import RESULT_NAME as RESULT
 from ..factory import Factory
 from ..models.data_collections import ButlerDataCollection
 from ..models.sia_query_params import BandInfo
+from ..sentry import capturing_start_span
 from ..services.votable import VotableConverterService
 
 logger = structlog.get_logger(__name__)
@@ -170,13 +171,14 @@ class ResponseHandlerService:
                 obscore_config=obscore_config,
                 butler_collection=collection,
             )
-
-        # Execute the query
-        table_as_votable = sia_query(
-            butler,
-            obscore_config,
-            params,
-        )
+        with capturing_start_span("sia_query") as span:
+            span.set_data("query", params)
+            # Execute the query
+            table_as_votable = sia_query(
+                butler,
+                obscore_config,
+                params,
+            )
 
         # Convert the result to a string
         result = VotableConverterService(table_as_votable).to_string()
