@@ -7,6 +7,7 @@ from typing import Annotated, Self
 from pydantic import Field, HttpUrl, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from safir.logging import LogLevel, Profile
+from safir.metrics import MetricsConfiguration, metrics_configuration_factory
 
 from .models.data_collections import ButlerDataCollection
 
@@ -31,6 +32,13 @@ class Config(BaseSettings):
         LogLevel.INFO, title="Log level of the application's logger"
     )
     """Log level of the application's logger."""
+
+    metrics: MetricsConfiguration = Field(
+        default_factory=metrics_configuration_factory,
+        title="Metrics configuration",
+        description="Configuration for reporting metrics to Kafka",
+    )
+    """Configuration for reporting metrics to Kafka."""
 
     model_config = SettingsConfigDict(env_prefix="SIA_", case_sensitive=False)
     """Configuration for the model settings."""
