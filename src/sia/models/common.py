@@ -1,9 +1,7 @@
 """Common models used by in different places in the application."""
 
 from enum import Enum
-from typing import TypeVar
-
-T = TypeVar("T", bound="CaseInsensitiveEnum")
+from typing import Self
 
 __all__ = ["CaseInsensitiveEnum"]
 
@@ -14,7 +12,7 @@ class CaseInsensitiveEnum(Enum):
     """
 
     @classmethod
-    def _missing_(cls: type[T], value: object) -> T | None:
+    def _missing_(cls, value: object) -> Self | None:
         """Return the Enum member that matches the given value.
 
         Parameters

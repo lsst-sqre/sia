@@ -423,4 +423,4 @@ class SIAQueryParams(BaseQueryParams):
         """
         if calib is None:
             return ()
-        return cast(list[Integral], [int(level.value) for level in calib])
+        return cast("list[Integral]", [int(level.value) for level in calib])
