@@ -201,6 +201,7 @@ class ResponseHandlerService:
                         SIAQueryFailed(error=str(e), duration=duration(span))
                     )
                 )
+                raise
 
             # Convert the result to a string
             result = VotableConverterService(table_as_votable).to_string()
