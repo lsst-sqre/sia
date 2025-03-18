@@ -16,8 +16,7 @@ from starlette.responses import Response
 
 from ..constants import BASE_RESOURCE_IDENTIFIER
 from ..constants import RESULT_NAME as RESULT
-from ..dependencies.context import RequestContext
-from ..events import SIAQuery
+from ..events import Events, SIAQueryFailed, SIAQuerySucceeded
 from ..factory import Factory
 from ..models.data_collections import ButlerDataCollection
 from ..models.sia_query_params import BandInfo
@@ -130,8 +129,9 @@ class ResponseHandlerService:
         factory: Factory,
         params: SIAv2Parameters,
         sia_query: SIAv2QueryType,
-        context: RequestContext,
+        request: Request,
         collection: ButlerDataCollection,
+        events: Events,
         token: str | None,
     ) -> Response:
         """Process the SIAv2 query and generate a Response.
@@ -144,10 +144,12 @@ class ResponseHandlerService:
             The parameters for the SIAv2 query.
         sia_query
             The SIA query method to use
-        context
-            The RequestContext object.
+        request
+            The request object.
         collection
             The Butler data collection
+        events
+            Object with attributes for all metrics event publishers.
         token
             The token to use for the Butler (Optional).
 
@@ -156,7 +158,6 @@ class ResponseHandlerService:
         Response
             The response containing the query results.
         """
-        request = context.request
         logger.info(
             "SIA query started with params:",
             params=params,
@@ -177,7 +178,6 @@ class ResponseHandlerService:
                 butler_collection=collection,
             )
 
-        success = False
         with capturing_start_span("sia_query") as span:
             span.set_data("query", params)
 
@@ -188,12 +188,17 @@ class ResponseHandlerService:
                     obscore_config,
                     params,
                 )
-                success = True
-            finally:
-                # Publish the SIA query event
+                # Publish success event
                 asyncio.run(
-                    context.events.sia_query.publish(
-                        SIAQuery(success=success, duration=duration(span))
+                    events.sia_query_succeeded.publish(
+                        SIAQuerySucceeded(duration=duration(span))
+                    )
+                )
+            except Exception as e:
+                # Publish failed event
+                asyncio.run(
+                    events.sia_query_failed.publish(
+                        SIAQueryFailed(error=str(e), duration=duration(span))
                     )
                 )
 

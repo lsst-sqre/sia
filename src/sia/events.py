@@ -7,11 +7,17 @@ from safir.dependencies.metrics import EventMaker
 from safir.metrics import EventManager, EventPayload
 
 
-class SIAQuery(EventPayload):
-    """Reported when a SIA query is executed."""
+class SIAQuerySucceeded(EventPayload):
+    """Reported when a SIA query is successfully executed."""
 
-    success: bool
+    duration: timedelta
+
+
+class SIAQueryFailed(EventPayload):
+    """Reported when a SIA query fails."""
+
     duration: timedelta | None
+    error: str | None = None
 
 
 class Events(EventMaker):
@@ -19,4 +25,9 @@ class Events(EventMaker):
 
     @override
     async def initialize(self, manager: EventManager) -> None:
-        self.sia_query = await manager.create_publisher("sia_query", SIAQuery)
+        self.sia_query_succeeded = await manager.create_publisher(
+            "sia_query_succeeded", SIAQuerySucceeded
+        )
+        self.sia_query_failed = await manager.create_publisher(
+            "sia_query_failed", SIAQueryFailed
+        )
