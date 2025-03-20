@@ -1,5 +1,6 @@
 """Module for the Query Processor service."""
 
+import asyncio
 from collections.abc import Callable
 from pathlib import Path
 
@@ -10,10 +11,12 @@ from fastapi.templating import Jinja2Templates
 from lsst.daf.butler import Butler
 from lsst.dax.obscore import ExporterConfig
 from lsst.dax.obscore.siav2 import SIAv2Parameters
+from safir.sentry import duration
 from starlette.responses import Response
 
 from ..constants import BASE_RESOURCE_IDENTIFIER
 from ..constants import RESULT_NAME as RESULT
+from ..events import Events, SIAQueryFailed, SIAQuerySucceeded
 from ..factory import Factory
 from ..models.data_collections import ButlerDataCollection
 from ..models.sia_query_params import BandInfo
@@ -128,6 +131,7 @@ class ResponseHandlerService:
         sia_query: SIAv2QueryType,
         request: Request,
         collection: ButlerDataCollection,
+        events: Events,
         token: str | None,
     ) -> Response:
         """Process the SIAv2 query and generate a Response.
@@ -144,6 +148,8 @@ class ResponseHandlerService:
             The request object.
         collection
             The Butler data collection
+        events
+            Object with attributes for all metrics event publishers.
         token
             The token to use for the Butler (Optional).
 
@@ -171,17 +177,34 @@ class ResponseHandlerService:
                 obscore_config=obscore_config,
                 butler_collection=collection,
             )
+
         with capturing_start_span("sia_query") as span:
             span.set_data("query", params)
-            # Execute the query
-            table_as_votable = sia_query(
-                butler,
-                obscore_config,
-                params,
-            )
 
-        # Convert the result to a string
-        result = VotableConverterService(table_as_votable).to_string()
+            try:
+                # Execute the query
+                table_as_votable = sia_query(
+                    butler,
+                    obscore_config,
+                    params,
+                )
+                # Publish success event
+                asyncio.run(
+                    events.sia_query_succeeded.publish(
+                        SIAQuerySucceeded(duration=duration(span))
+                    )
+                )
+            except Exception as e:
+                # Publish failed event
+                asyncio.run(
+                    events.sia_query_failed.publish(
+                        SIAQueryFailed(error=str(e), duration=duration(span))
+                    )
+                )
+                raise
+
+            # Convert the result to a string
+            result = VotableConverterService(table_as_votable).to_string()
 
         # For the moment only VOTable is supported, so we can hardcode the
         # media_type and the file extension.

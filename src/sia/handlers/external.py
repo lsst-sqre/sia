@@ -192,5 +192,6 @@ def query(
         token=delegated_token,
         sia_query=siav2_query,
         collection=collection,
+        events=context.events,
         request=context.request,
     )
