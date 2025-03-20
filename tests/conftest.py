@@ -79,7 +79,10 @@ async def client(app: FastAPI) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="https://example.com/",
-        headers={"X-Auth-Request-Token": "sometoken"},
+        headers={
+            "X-Auth-Request-Token": "sometoken",
+            "X-Auth-Request-User": "user",
+        },
     ) as client:
         yield client
 
@@ -119,6 +122,10 @@ async def client_direct(app_direct: FastAPI) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(
         transport=ASGITransport(app=app_direct),
         base_url="https://example.com/",
+        headers={
+            "X-Auth-Request-Token": "sometoken",
+            "X-Auth-Request-User": "user",
+        },
     ) as client:
         yield client
 
