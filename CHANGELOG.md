@@ -7,6 +7,14 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.2.1'></a>
+
+## 0.2.1 (2025-03-20)
+
+### New features
+
+- Record username for Sentry events
+
 <a id='changelog-0.2.0'></a>
 ## 0.2.0  (2025-03-19)
 
