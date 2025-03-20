@@ -7,6 +7,22 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.2.0'></a>
+## 0.2.0  (2025-03-19)
+
+### Changed
+
+- Enable Sentry metrics (events)
+
+<a id='changelog-0.1.7'></a>
+## 0.1.7  (2025-03-18)
+
+### Changed
+
+- Capture sia query in sentry tracing
+- Update Python and pre-commit dependencies
+
+
 <a id='changelog-0.1.6'></a>
 ## 0.1.6  (2025-01-31)
 
