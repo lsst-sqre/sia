@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
 from lsst.dax.obscore.siav2 import SIAv2Parameters, siav2_query
+from safir.dependencies.gafaelfawr import auth_dependency
 from safir.dependencies.logger import logger_dependency
 from safir.metadata import get_metadata
 from safir.models import ErrorModel
@@ -182,6 +183,7 @@ def query(
     context: Annotated[RequestContext, Depends(context_dependency)],
     collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
     params: Annotated[SIAv2Parameters, Depends(get_sia_params_dependency)],
+    user: Annotated[str, Depends(auth_dependency)],
     delegated_token: Annotated[
         str | None, Depends(optional_auth_delegated_token_dependency)
     ],
@@ -193,5 +195,6 @@ def query(
         sia_query=siav2_query,
         collection=collection,
         events=context.events,
+        user=user,
         request=context.request,
     )

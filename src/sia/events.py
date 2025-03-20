@@ -11,11 +11,13 @@ class SIAQuerySucceeded(EventPayload):
     """Reported when a SIA query is successfully executed."""
 
     duration: timedelta
+    username: str
 
 
 class SIAQueryFailed(EventPayload):
     """Reported when a SIA query fails."""
 
+    username: str
     duration: timedelta | None
     error: str | None = None
 

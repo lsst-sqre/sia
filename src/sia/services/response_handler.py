@@ -132,6 +132,7 @@ class ResponseHandlerService:
         request: Request,
         collection: ButlerDataCollection,
         events: Events,
+        user: str,
         token: str | None,
     ) -> Response:
         """Process the SIAv2 query and generate a Response.
@@ -150,6 +151,8 @@ class ResponseHandlerService:
             The Butler data collection
         events
             Object with attributes for all metrics event publishers.
+        user
+            The username.
         token
             The token to use for the Butler (Optional).
 
@@ -191,14 +194,20 @@ class ResponseHandlerService:
                 # Publish success event
                 asyncio.run(
                     events.sia_query_succeeded.publish(
-                        SIAQuerySucceeded(duration=duration(span))
+                        SIAQuerySucceeded(
+                            duration=duration(span), username=user
+                        )
                     )
                 )
             except Exception as e:
                 # Publish failed event
                 asyncio.run(
                     events.sia_query_failed.publish(
-                        SIAQueryFailed(error=str(e), duration=duration(span))
+                        SIAQueryFailed(
+                            error=str(e),
+                            duration=duration(span),
+                            username=user,
+                        )
                     )
                 )
                 raise
