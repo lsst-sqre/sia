@@ -66,7 +66,7 @@ class ResponseHandlerService:
         return bands
 
     @staticmethod
-    def self_description_response(
+    async def self_description_response(
         request: Request,
         butler: Butler,
         obscore_config: ExporterConfig,
@@ -124,7 +124,7 @@ class ResponseHandlerService:
         )
 
     @staticmethod
-    def process_query(
+    async def process_query(
         *,
         factory: Factory,
         params: SIAv2Parameters,
@@ -167,14 +167,20 @@ class ResponseHandlerService:
             method=request.method,
         )
 
-        butler = factory.create_butler(
-            butler_collection=collection,
-            token=token,
+        loop = asyncio.get_running_loop()
+
+        # Run Butler creation in a thread pool
+        butler = await loop.run_in_executor(
+            None,
+            lambda: factory.create_butler(
+                butler_collection=collection,
+                token=token,
+            ),
         )
         obscore_config = factory.create_obscore_config(collection.label)
 
         if params.maxrec == 0:
-            return ResponseHandlerService.self_description_response(
+            return await ResponseHandlerService.self_description_response(
                 request=request,
                 butler=butler,
                 obscore_config=obscore_config,
@@ -186,34 +192,30 @@ class ResponseHandlerService:
 
             try:
                 # Execute the query
-                table_as_votable = sia_query(
-                    butler,
-                    obscore_config,
-                    params,
+                table_as_votable = await loop.run_in_executor(
+                    None, lambda: sia_query(butler, obscore_config, params)
                 )
+
                 # Publish success event
-                asyncio.run(
-                    events.sia_query_succeeded.publish(
-                        SIAQuerySucceeded(
-                            duration=duration(span), username=user
-                        )
-                    )
+                await events.sia_query_succeeded.publish(
+                    SIAQuerySucceeded(duration=duration(span), username=user)
                 )
             except Exception as e:
                 # Publish failed event
-                asyncio.run(
-                    events.sia_query_failed.publish(
-                        SIAQueryFailed(
-                            error=str(e),
-                            duration=duration(span),
-                            username=user,
-                        )
+                await events.sia_query_failed.publish(
+                    SIAQueryFailed(
+                        error=str(e),
+                        duration=duration(span),
+                        username=user,
                     )
                 )
                 raise
 
             # Convert the result to a string
-            result = VotableConverterService(table_as_votable).to_string()
+            result = await loop.run_in_executor(
+                None,
+                lambda: VotableConverterService(table_as_votable).to_string(),
+            )
 
         # For the moment only VOTable is supported, so we can hardcode the
         # media_type and the file extension.
