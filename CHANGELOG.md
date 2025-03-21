@@ -7,6 +7,15 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.3.0'></a>
+
+## 0.3.0 (2025-03-21)
+
+### Changed
+
+- Make query route and handler asynchronous, to allow publishing events in Sentry which is async
+
+
 <a id='changelog-0.2.1'></a>
 
 ## 0.2.1 (2025-03-20)
