@@ -178,7 +178,7 @@ async def get_capabilities(
     },
     summary="IVOA SIA (v2) service query (POST)",
 )
-def query(
+async def query(
     *,
     context: Annotated[RequestContext, Depends(context_dependency)],
     collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
@@ -188,7 +188,7 @@ def query(
         str | None, Depends(optional_auth_delegated_token_dependency)
     ],
 ) -> Response:
-    return ResponseHandlerService.process_query(
+    return await ResponseHandlerService.process_query(
         factory=context.factory,
         params=params,
         token=delegated_token,
