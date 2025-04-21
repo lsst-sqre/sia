@@ -19,7 +19,7 @@ google-cloud-storage
 requests
 jinja2
 pydantic
-pydantic-xml
+pydantic-xml<2.16  # https://github.com/spacetelescope/vo-models/issues/30
 pydantic-settings
 safir>=5
 numpy
