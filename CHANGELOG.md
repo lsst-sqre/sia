@@ -7,6 +7,16 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.4.0'></a>
+
+## 0.4.0 (2025-05-02)
+
+### Changed
+
+- Upgraded dependencies
+- Upgraded Python to 3.13
+- Fixed test to match upgraded dependecies
+
 <a id='changelog-0.3.0'></a>
 
 ## 0.3.0 (2025-03-21)
