@@ -7,6 +7,15 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.5.0'></a>
+
+## 0.5.0 (2025-05-29)
+
+### Changed
+
+- Upgraded dependencies (Includes dax_obscore band bugfix)
+- Upgraded Python to 3.13.3
+
 <a id='changelog-0.4.0'></a>
 
 ## 0.4.0 (2025-05-02)
