@@ -28,4 +28,4 @@ vo-models
 defusedxml
 sentry-sdk
 lsst-daf-butler[postgres, remote]
-lsst-dax-obscore
+lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore@main#egg=lsst-dax-obscore
