@@ -7,6 +7,18 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.6.0'></a>
+
+##  0.6.0 (2025-06-05)
+
+### New features
+
+- Add support for dpsubtype parameters
+
+### Other changes
+
+- Upgrade requirements
+
 <a id='changelog-0.5.0'></a>
 
 ## 0.5.0 (2025-05-29)
