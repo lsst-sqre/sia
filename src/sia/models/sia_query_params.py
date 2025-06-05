@@ -17,8 +17,6 @@ __all__ = [
     "BandInfo",
     "BaseQueryParams",
     "CalibLevel",
-    "DPType",
-    "Polarization",
     "SIAQueryParams",
     "Shape",
 ]
@@ -41,30 +39,6 @@ class Shape(CaseInsensitiveEnum):
     CIRCLE = "CIRCLE"
     RANGE = "RANGE"
     POLYGON = "POLYGON"
-
-
-class DPType(CaseInsensitiveEnum):
-    """Enumeration of possible data product types."""
-
-    IMAGE = "IMAGE"
-    CUBE = "CUBE"
-
-
-class Polarization(CaseInsensitiveEnum):
-    """Enumeration of possible polarization states."""
-
-    I = "I"  # noqa: E741
-    Q = "Q"
-    U = "U"
-    V = "V"
-    RR = "RR"
-    LL = "LL"
-    RL = "RL"
-    LR = "LR"
-    XX = "XX"
-    YY = "YY"
-    XY = "XY"
-    YX = "YX"
 
 
 @dataclass
@@ -149,6 +123,8 @@ class SIAQueryParams(BaseQueryParams):
         Identifier of dataset(s). (Case insensitive)
     dptype
         Type of data (dataproduct_type).
+    dpsubtype
+        ObsCore data product sub type. An extension to the standard.
     calib
         Calibration level of the data.
     target
@@ -210,7 +186,7 @@ class SIAQueryParams(BaseQueryParams):
     ] = None
 
     pol: Annotated[
-        list[Polarization] | None,
+        list[str] | None,
         Query(
             title="pol",
             description="Polarization state(s) to be searched",
@@ -269,13 +245,22 @@ class SIAQueryParams(BaseQueryParams):
             title="id",
             alias="id",
             description="Identifier of dataset(s)",
-            examples=["obs_id_1"],
+            examples=["ivo://org.rubinobs/usdac/dp02"],
         ),
     ] = None
 
     dptype: Annotated[
-        list[DPType] | None,
+        list[str] | None,
         Query(title="dptype", description="Type of data", examples=["image"]),
+    ] = None
+
+    dpsubtype: Annotated[
+        list[str] | None,
+        Query(
+            title="dpsubtype",
+            description="ObsCore data product sub type",
+            examples=["lsst.deep_coadd"],
+        ),
     ] = None
 
     calib: Annotated[
@@ -401,7 +386,18 @@ class SIAQueryParams(BaseQueryParams):
                 time=self.time or (),
                 band=self.band or (),
                 exptime=self.exptime or (),
+                dptype=self.dptype or (),
+                dpsubtype=self.dpsubtype or (),
                 calib=self._convert_calib(calib=self.calib),
+                pol=self.pol or (),
+                fov=self.fov or (),
+                spatres=self.spatres or (),
+                specrp=self.specrp or (),
+                timeres=self.timeres or (),
+                id=self.id or (),
+                collection=self.collection or (),
+                facility=self.facility or (),
+                target=self.target or (),
                 maxrec=str(self.maxrec) if self.maxrec is not None else None,
             )
         except ValueError as exc:

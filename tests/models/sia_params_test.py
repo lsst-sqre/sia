@@ -8,8 +8,6 @@ from sia.models.common import CaseInsensitiveEnum
 from sia.models.sia_query_params import (
     BandInfo,
     CalibLevel,
-    DPType,
-    Polarization,
     Shape,
     SIAQueryParams,
 )
@@ -44,27 +42,6 @@ async def test_shape_enum() -> None:
 
 
 @pytest.mark.asyncio
-async def test_dptype_enum() -> None:
-    """Test the DPType enum."""
-    assert DPType("image") == DPType.IMAGE
-    assert DPType("CUBE") == DPType.CUBE
-
-    with pytest.raises(ValueError, match="'video' is not a valid DPType"):
-        DPType("video")
-
-
-@pytest.mark.asyncio
-async def test_polarization_enum() -> None:
-    """Test the Polarization enum."""
-    assert Polarization("i") == Polarization.I
-    assert Polarization("RR") == Polarization.RR
-    assert Polarization("xy") == Polarization.XY
-
-    with pytest.raises(ValueError, match="'Z' is not a valid Polarization"):
-        Polarization("Z")
-
-
-@pytest.mark.asyncio
 async def test_sia_params_initialization() -> None:
     """Test the initialization of SIAv2QueryParams."""
     params = SIAQueryParams(
@@ -72,14 +49,15 @@ async def test_sia_params_initialization() -> None:
         format=["application/fits"],
         time=["55 55"],
         band=["0.1 10.0"],
-        pol=[Polarization("I"), Polarization("Q")],
+        pol=["I", "Q"],
         fov=["1.0 2.0"],
         spatres=["0.1 0.2"],
         exptime=["-Inf 60"],
         timeres=["-Inf 1.0"],
         specrp=["1000 2000"],
         id=["obs_id_1"],
-        dptype=[DPType("image")],
+        dptype=["image"],
+        dpsubtype=["lsst.deepCoadd"],
         calib=[CalibLevel(0), CalibLevel(1), CalibLevel(2)],
         target=["M31"],
         collection=["HST"],
@@ -93,14 +71,15 @@ async def test_sia_params_initialization() -> None:
     assert params.format == ["application/fits"]
     assert params.time == ["55 55"]
     assert params.band == ["0.1 10.0"]
-    assert params.pol == [Polarization("I"), Polarization("Q")]
+    assert params.pol == ["I", "Q"]
     assert params.fov == ["1.0 2.0"]
     assert params.spatres == ["0.1 0.2"]
     assert params.exptime == ["-Inf 60"]
     assert params.timeres == ["-Inf 1.0"]
     assert params.specrp == ["1000 2000"]
     assert params.id == ["obs_id_1"]
-    assert params.dptype == [DPType("image")]
+    assert params.dptype == ["image"]
+    assert params.dpsubtype == ["lsst.deepCoadd"]
     assert params.calib == [0, 1, 2]
     assert params.target == ["M31"]
     assert params.collection == ["HST"]
@@ -127,6 +106,7 @@ async def test_sia_params_default_values() -> None:
     assert params.specrp is None
     assert params.id is None
     assert params.dptype is None
+    assert params.dpsubtype is None
     assert params.calib is None
     assert params.target is None
     assert params.collection is None
@@ -201,14 +181,15 @@ def sample_sia_params() -> SIAQueryParams:
         format=["application/fits"],
         time=["55"],
         band=["0.1 10.0"],
-        pol=[Polarization("I"), Polarization("Q")],
+        pol=["I"],
         fov=["1.0 2.0"],
         spatres=["0.1 0.2"],
         exptime=["-Inf 60"],
         timeres=["-Inf 1.0"],
         specrp=["1000 2000"],
         id=["obs_id_1"],
-        dptype=[DPType("image")],
+        dptype=["image"],
+        dpsubtype=["lsst.deepCoadd"],
         calib=[CalibLevel(0), CalibLevel(1), CalibLevel(2)],
         target=["M31"],
         collection=["HST"],
