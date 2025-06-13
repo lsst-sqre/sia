@@ -66,6 +66,29 @@ class ResponseHandlerService:
         return bands
 
     @staticmethod
+    def _get_dataproduct_subtypes(
+        obscore_config: ExporterConfig,
+    ) -> list[str]:
+        """Extract unique dataproduct subtypes from dataset types.
+
+        Parameters
+        ----------
+        obscore_config
+            The ExporterConfig object containing dataset types.
+
+        Returns
+        -------
+        list[str]
+            The list of unique dataproduct subtypes.
+        """
+        subtypes = {
+            config.dataproduct_subtype
+            for config in obscore_config.dataset_types.values()
+            if config.dataproduct_subtype is not None
+        }
+        return list(subtypes)
+
+    @staticmethod
     async def self_description_response(
         request: Request,
         butler: Butler,
@@ -96,6 +119,10 @@ class ResponseHandlerService:
             obscore_config.spectral_ranges
         )
 
+        dataproduct_subtypes = (
+            ResponseHandlerService._get_dataproduct_subtypes(obscore_config)
+        )
+
         return _TEMPLATES.TemplateResponse(
             request,
             "self_description.xml",
@@ -115,6 +142,7 @@ class ResponseHandlerService:
                 ),
                 "facility_name": obscore_config.facility_name.strip(),
                 "bands": bands,
+                "dataproduct_subtypes": dataproduct_subtypes,
             },
             headers={
                 "content-disposition": f"attachment; filename={RESULT}.xml",

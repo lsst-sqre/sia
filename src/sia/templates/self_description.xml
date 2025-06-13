@@ -34,6 +34,14 @@
           <OPTION value="image"/>
         </VALUES>
       </PARAM>
+      <PARAM name="DPSUBTYPE" datatype="char" arraysize="*">
+        <DESCRIPTION>Value of dataproduct subtype</DESCRIPTION>
+        <VALUES type="actual">
+          {%- for dpsubtype in dataproduct_subtypes|sort  %}
+          <OPTION value="{{ dpsubtype }}"/>
+          {%- endfor %}
+        </VALUES>
+      </PARAM>
       <PARAM name="EXPTIME" datatype="double" arraysize="2" unit="sec" xtype="interval">
         <DESCRIPTION>Range of exposure times</DESCRIPTION>
       </PARAM>
