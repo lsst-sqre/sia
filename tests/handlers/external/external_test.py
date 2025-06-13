@@ -260,6 +260,7 @@ async def test_query_maxrec_zero(
     context = {
         "instruments": ["HSC"],
         "collections": ["LSST.CI"],
+        "dataproduct_subtypes": ["lsst.coadd", "lsst.raw", "lsst.calexp"],
         "resource_identifier": "ivo://rubin//ci_hsc_gen3",
         "access_url": "https://example.com/api/sia/hsc/query",
         "facility_name": "Subaru",
