@@ -71,7 +71,7 @@ R = TypeVar("R")  # Return type
 P = ParamSpec("P")  # Parameters
 
 
-def handle_exceptions(func: Callable[P, R]) -> Callable[P, R]:
+def handle_exceptions(func: Callable[P, R]) -> Callable[P, R]:  # noqa: UP047
     """Handle exceptions in the decorated function by logging
     and then formatting as a VOTable.
 

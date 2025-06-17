@@ -1,6 +1,7 @@
 """FastAPI dependencies for handling tokens."""
 
 from fastapi import Header
+from safir.dependencies.gafaelfawr import auth_delegated_token_dependency
 
 
 async def optional_auth_delegated_token_dependency(
@@ -24,7 +25,5 @@ async def optional_auth_delegated_token_dependency(
     """
     if x_auth_request_token is None:
         return None
-
-    from safir.dependencies.gafaelfawr import auth_delegated_token_dependency
 
     return await auth_delegated_token_dependency(x_auth_request_token)

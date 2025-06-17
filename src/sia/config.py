@@ -9,6 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from safir.logging import LogLevel, Profile
 from safir.metrics import MetricsConfiguration, metrics_configuration_factory
 
+from .exceptions import FatalFaultError
 from .models.data_collections import ButlerDataCollection
 
 __all__ = ["Config", "config"]
@@ -92,8 +93,6 @@ class Config(BaseSettings):
     @model_validator(mode="after")
     def _validate_butler_data_collections(self) -> Self:
         """Validate the Butler data collections."""
-        from .exceptions import FatalFaultError
-
         if len(self.butler_data_collections) == 0:
             raise FatalFaultError(
                 detail="No Data Collections configured. Please configure "
