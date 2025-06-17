@@ -6,6 +6,8 @@ from unittest.mock import Mock, patch
 from uuid import UUID, uuid4
 
 import astropy
+from astropy.io.votable import from_table
+from astropy.table import Table
 from lsst.daf.butler import Butler, LabeledButlerFactory
 from lsst.resources import ResourcePath
 
@@ -22,9 +24,6 @@ class MockButlerQueryService:
         astropy.io.votable.tree.VOTableFile
             The mock ObsCore VOTable.
         """
-        from astropy.io.votable import from_table
-        from astropy.table import Table
-
         # Create an Astropy Table with Obscore columns
         t = Table(
             names=(
