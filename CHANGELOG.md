@@ -7,6 +7,22 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.6.4'></a>
+
+## 0.6.4 (2025-06-24)
+
+### Other changes
+
+- Upgrade requirements and fix maxrec=0 output
+
+<a id='changelog-0.6.3'></a>
+
+## 0.6.3 (2025-06-23)
+
+### Other changes
+
+- Upgrade requirements
+
 <a id='changelog-0.6.2'></a>
 
 ## 0.6.2 (2025-06-17)
