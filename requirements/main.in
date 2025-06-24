@@ -19,13 +19,12 @@ google-cloud-storage
 requests
 jinja2
 pydantic
-pydantic-xml<2.16  # https://github.com/spacetelescope/vo-models/issues/30
+pydantic-xml
 pydantic-settings
 safir>=5
 numpy
 astropy
 vo-models
 defusedxml
-sentry-sdk
-lsst-daf-butler[postgres, remote]
-lsst-dax-obscore
+lsst-daf-butler[postgres, remote] @ git+https://github.com/lsst/daf_butler@main#egg=lsst-daf-butler
+lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore@main#egg=lsst-dax-obscore

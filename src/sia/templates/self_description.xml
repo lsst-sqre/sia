@@ -48,7 +48,7 @@
       <PARAM name="FACILITY" datatype="char" arraysize="*">
         <DESCRIPTION>Facility (telescope) name</DESCRIPTION>
         <VALUES type="actual">
-          <OPTION value="{{ facility_name }} "/>
+          <OPTION value="{{ facility_name }}"/>
         </VALUES>
       </PARAM>
       <PARAM name="FORMAT" datatype="char" arraysize="*">
@@ -62,7 +62,7 @@
         <DESCRIPTION>Field of view</DESCRIPTION>
       </PARAM>
       <PARAM name="ID" datatype="char" arraysize="*">
-        <DESCRIPTION>Observation ID</DESCRIPTION>
+        <DESCRIPTION>IVOA ID from the publisher for a dataset</DESCRIPTION>
       </PARAM>
       <PARAM name="INSTRUMENT" datatype="char" arraysize="*">
         <DESCRIPTION>Instrument name</DESCRIPTION>
@@ -138,6 +138,9 @@
       </FIELD>
       <FIELD name="obs_id" datatype="char" arraysize="*" ucd="meta.id" utype="obscore:dataid.observationid">
         <DESCRIPTION>Internal ID given by the ObsTAP service</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_title" datatype="char" arraysize="*" ucd="meta.title;obs" utype="obscore:dataid.title">
+        <DESCRIPTION>Brief description of dataset in free format</DESCRIPTION>
       </FIELD>
       <FIELD name="s_resolution" datatype="double" ucd="pos.angResolution" unit="arcsec" utype="obscore:char.spatialaxis.resolution.refval.value">
         <DESCRIPTION>Spatial resolution (FWHM)</DESCRIPTION>
