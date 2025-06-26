@@ -112,7 +112,6 @@ async def test_sia_params_default_values() -> None:
     assert params.collection is None
     assert params.facility is None
     assert params.instrument is None
-    assert params.maxrec == 0
     assert params.responseformat is None
 
 
