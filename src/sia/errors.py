@@ -40,13 +40,22 @@ async def votable_exception_handler(
     Response
         The VOTAble error response.
     """
-    logger.error(
-        "Error during query processing",
-        error_type=type(exc).__name__,
-        error_message=str(exc),
-        path=request.url.path,
-        method=request.method,
-    )
+    if isinstance(exc, UsageFaultError):
+        logger.info(
+            "User input error during query processing",
+            error_type=type(exc).__name__,
+            error_message=str(exc),
+            path=request.url.path,
+            method=request.method,
+        )
+    else:
+        logger.error(
+            "Error during query processing",
+            error_type=type(exc).__name__,
+            error_message=str(exc),
+            path=request.url.path,
+            method=request.method,
+        )
 
     if isinstance(exc, RequestValidationError):
         error_message = str(exc)

@@ -148,6 +148,8 @@ class SIAQueryParams(BaseQueryParams):
     (See: https://github.com/fastapi/fastapi/discussions/10556)
     """
 
+    MAXREC_LIMIT: int = 60000
+
     pos: Annotated[
         list[str] | None,
         Query(
@@ -350,10 +352,10 @@ class SIAQueryParams(BaseQueryParams):
 
     def __post_init__(self) -> None:
         """Validate the form parameters."""
-        # If no parameters were provided, I don't think we should run a query
-        # Instead return the self-description VOTable
-        if self.all_params_none():
-            self.maxrec = 0
+        if self.maxrec is None:
+            self.maxrec = self.MAXREC_LIMIT
+        else:
+            self.maxrec = min(int(self.maxrec), self.MAXREC_LIMIT)
 
     def to_dict(self) -> dict[str, Any]:
         """Return the query parameters as a dictionary.

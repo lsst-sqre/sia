@@ -33,3 +33,9 @@ class VotableConverterService:
         with io.BytesIO() as output:
             self.votable.to_xml(output)
             return output.getvalue().decode("utf-8")
+
+    def to_bytes(self) -> bytes:
+        """Convert the VOTableFile object to bytes."""
+        with io.BytesIO() as output:
+            self.votable.to_xml(output)
+            return output.getvalue()

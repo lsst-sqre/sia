@@ -12,12 +12,14 @@ try:
     import sentry_sdk
     from safir.sentry import before_send_handler
     from sentry_sdk.tracing import Span
+    from sentry_sdk.types import Event
 
     _SENTRY_AVAILABLE = True
 except ImportError:
     sentry_sdk = None  # type: ignore[assignment]
     before_send_handler = None  # type: ignore[assignment]
     Span = None  # type: ignore[assignment,misc]
+    Event = None  # type: ignore[assignment,misc]
     _SENTRY_AVAILABLE = False
 
 from .config import config
@@ -30,6 +32,32 @@ def enable_sentry() -> None:
     if not _SENTRY_AVAILABLE:
         return
 
+    def before_send_filter(event: Event, hint: dict[str, Any]) -> Event | None:
+        """Filter out ValueError errors from Sentry events."""
+        if "exc_info" in hint:
+            exc_type, _, _ = hint["exc_info"]
+            if (
+                exc_type is ValueError
+                or exc_type.__name__ == "UsageFaultError"
+            ):
+                return None
+
+        if event.get("level") == "error":
+            extra_data = event.get("extra", {})
+            if extra_data.get("error_type") == "UsageFaultError":
+                return None
+
+            logentry = event.get("logentry")
+            if logentry is not None:
+                log_message = logentry.get("message", "")
+                if (
+                    isinstance(log_message, str)
+                    and "UsageFaultError" in log_message
+                ):
+                    return None
+
+        return before_send_handler(event, hint)
+
     sampler = make_traces_sampler(
         original_rate=config.sentry_traces_sample_rate,
         exclude_patterns=["/", re.compile(r"^/healthcheck(/.*)?$")],
@@ -38,7 +66,7 @@ def enable_sentry() -> None:
     sentry_sdk.init(
         dsn=config.sentry_dsn,
         environment=config.environment_name,
-        before_send=before_send_handler,
+        before_send=before_send_filter,
         traces_sampler=sampler,
     )
 
@@ -119,7 +147,12 @@ def capturing_start_span(op: str, **kwargs: Any) -> Generator[Span]:
 
         try:
             yield span
+        except ValueError:
+            # Don't capture ValueError exceptions - just re-raise them
+            raise
         except Exception as e:
+            if type(e).__name__ == "UsageFaultError":
+                raise
             sentry_sdk.capture_exception(e)
             raise
         finally:

@@ -1,6 +1,8 @@
 """Module for the Query Processor service."""
 
 import asyncio
+import time
+import uuid
 from collections.abc import Callable
 from pathlib import Path
 
@@ -189,6 +191,9 @@ class ResponseHandlerService:
         Response
             The response containing the query results.
         """
+        start_time = time.time()
+        query_id = str(uuid.uuid4())[:8]
+
         logger.info(
             "SIA query started with params:",
             params=params,
@@ -208,6 +213,11 @@ class ResponseHandlerService:
         obscore_config = factory.create_obscore_config(collection.label)
 
         if params.maxrec == 0:
+            logger.info(
+                "Returning self-description response (maxrec=0)",
+                user=user,
+                query_id=query_id,
+            )
             return await ResponseHandlerService.self_description_response(
                 request=request,
                 butler=butler,
@@ -217,11 +227,28 @@ class ResponseHandlerService:
 
         with capturing_start_span("sia_query") as span:
             span.set_data("query", params)
+            span.set_data("query_id", query_id)
+            span.set_data("user", user)
 
             try:
+                query_start_time = time.time()
+                logger.info(
+                    "Starting SIA query execution",
+                    user=user,
+                    query_id=query_id,
+                )
+
                 # Execute the query
                 table_as_votable = await loop.run_in_executor(
                     None, lambda: sia_query(butler, obscore_config, params)
+                )
+
+                query_duration = time.time() - query_start_time
+                logger.info(
+                    "SIA query execution completed",
+                    query_duration_seconds=round(query_duration, 3),
+                    user=user,
+                    query_id=query_id,
                 )
 
                 # Publish success event
@@ -229,6 +256,14 @@ class ResponseHandlerService:
                     SIAQuerySucceeded(duration=duration(span), username=user)
                 )
             except Exception as e:
+                query_duration = time.time() - query_start_time
+                logger.info(
+                    "SIA query execution failed",
+                    error=str(e),
+                    query_duration_seconds=round(query_duration, 3),
+                    user=user,
+                    query_id=query_id,
+                )
                 # Publish failed event
                 await events.sia_query_failed.publish(
                     SIAQueryFailed(
@@ -239,11 +274,24 @@ class ResponseHandlerService:
                 )
                 raise
 
+            conversion_start_time = time.time()
             # Convert the result to a string
             result = await loop.run_in_executor(
                 None,
-                lambda: VotableConverterService(table_as_votable).to_string(),
+                lambda: VotableConverterService(table_as_votable).to_bytes(),
             )
+
+            conversion_duration = time.time() - conversion_start_time
+
+        total_duration = time.time() - start_time
+        logger.info(
+            "SIA query processing completed successfully",
+            total_duration_seconds=round(total_duration, 3),
+            query_duration_seconds=round(query_duration, 3),
+            conversion_duration_seconds=round(conversion_duration, 3),
+            user=user,
+            query_id=query_id,
+        )
 
         # For the moment only VOTable is supported, so we can hardcode the
         # media_type and the file extension.
