@@ -7,6 +7,22 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-1.0.0'></a>
+
+## 1.0.0 (2025-06-26)
+
+### Bug fixes
+
+- Fix maxrec>0 but no params "bug"
+
+### Other changes
+
+- Add more detailed logging on SIA query execution
+- Dont send UsageFault and ValueError queries to Sentry
+- Change VOTable to return bytes
+
+- Remove UsageFault and ValueError from errors reported to Sentry
+
 <a id='changelog-0.6.4'></a>
 
 ## 0.6.4 (2025-06-24)
