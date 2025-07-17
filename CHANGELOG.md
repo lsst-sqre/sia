@@ -7,6 +7,18 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-1.0.1'></a>
+
+## 1.0.1 (2025-07-17)
+
+### New features
+
+- Show coosys/timesys in the self-description response
+
+### Other changes
+
+- Upgrade requirements & fix VOTable header for 1.5
+
 <a id='changelog-1.0.0'></a>
 
 ## 1.0.0 (2025-06-26)
