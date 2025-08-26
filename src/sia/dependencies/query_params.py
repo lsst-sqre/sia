@@ -4,7 +4,6 @@ from collections import defaultdict
 from typing import Annotated
 
 from fastapi import Depends, Request
-from lsst.dax.obscore.siav2 import SIAv2Parameters
 
 from ..constants import SINGLE_PARAMS
 from ..models.sia_query_params import SIAQueryParams
@@ -14,7 +13,7 @@ async def get_sia_params_dependency(
     *,
     params: Annotated[SIAQueryParams, Depends(SIAQueryParams)],
     request: Request,
-) -> SIAv2Parameters:
+) -> SIAQueryParams:
     """Parse GET and POST parameters into SIAv2Parameters for SIA query."""
     # For POST requests, use form data
     if request.method == "POST":
@@ -31,4 +30,4 @@ async def get_sia_params_dependency(
         }
         params = SIAQueryParams.from_dict(post_params)
 
-    return params.to_butler_parameters()
+    return params

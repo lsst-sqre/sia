@@ -8,7 +8,10 @@ from numbers import Integral
 from typing import Annotated, Any, Self, TypeVar, cast
 
 from fastapi import Query
-from lsst.dax.obscore.siav2 import SIAv2Parameters
+from lsst.dax.obscore.siav2 import (
+    SIAv2Parameters,
+    siav2_parameters_to_query_description,
+)
 
 from ..exceptions import UsageFaultError
 from ..models.common import CaseInsensitiveEnum
@@ -422,3 +425,7 @@ class SIAQueryParams(BaseQueryParams):
         if calib is None:
             return ()
         return cast("list[Integral]", [int(level.value) for level in calib])
+
+    def to_query_description(self) -> str:
+        """Generate query description for DataOrigin metadata."""
+        return siav2_parameters_to_query_description(**self.to_dict())
