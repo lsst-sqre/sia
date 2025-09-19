@@ -31,7 +31,7 @@ async def test_availability(
     templates_dir = Jinja2Templates(
         directory=str(Path(__file__).parent.parent.parent / "templates")
     )
-    mock_client, mock_response = mock_async_client
+    _mock_client, _mock_response = mock_async_client
 
     r = await client.get(f"{config.path_prefix}/dp02/availability")
     assert r.status_code == 200

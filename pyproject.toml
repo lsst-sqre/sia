@@ -19,7 +19,9 @@ classifiers = [
 ]
 requires-python = ">=3.12"
 # Use requirements/main.in for runtime dependencies instead.
-dependencies = []
+dependencies = [
+    "safir[kafka]>=13.0.0",
+]
 dynamic = ["version"]
 
 [project.scripts]

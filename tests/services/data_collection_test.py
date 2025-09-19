@@ -1,5 +1,6 @@
 """Tests for the config_reader module."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -70,7 +71,7 @@ async def test_get_data_collection_no_label(
     """Test get_data_collection function with no label."""
     with pytest.raises(
         ValueError,
-        match="Label is required.",
+        match=re.escape("Label is required."),
     ):
         DataCollectionService(
             config=test_config_remote
@@ -82,8 +83,10 @@ async def test_get_data_collection_empty_config() -> None:
     """Test get_data_collection function with an empty configuration."""
     with pytest.raises(
         FatalFaultError,
-        match="FatalFault: No Data Collections configured. Please configure "
-        "at least one Data collection.",
+        match=re.escape(
+            "FatalFault: No Data Collections configured. "
+            "Please configure at least one Data collection."
+        ),
     ):
         empty_config = Config(
             butler_data_collections=[],
@@ -100,7 +103,7 @@ async def test_get_data_collection_invalid_label(
     """Test get_data_collection function with an invalid label."""
     with pytest.raises(
         KeyError,
-        match="Label InvalidLabel not found in Data collections",
+        match=re.escape("Label InvalidLabel not found in Data collections"),
     ):
         DataCollectionService(
             config=test_config_remote
