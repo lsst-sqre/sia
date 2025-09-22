@@ -1,6 +1,7 @@
 """Test the Config model."""
 
 import json
+import re
 
 import pytest
 from pydantic_settings import SettingsError
@@ -40,7 +41,9 @@ async def test_config_no_butler_type(
 
     with pytest.raises(
         FatalFaultError,
-        match="FatalFault: No Data Collections configured. "
-        "Please configure at least one Data collection.",
+        match=re.escape(
+            "FatalFault: No Data Collections configured. "
+            "Please configure at least one Data collection."
+        ),
     ):
         Config()

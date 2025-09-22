@@ -21,7 +21,7 @@ jinja2
 pydantic
 pydantic-xml
 pydantic-settings
-safir>=5
+safir[kafka]>=13
 numpy
 astropy
 vo-models
