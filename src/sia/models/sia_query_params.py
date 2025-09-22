@@ -8,7 +8,10 @@ from numbers import Integral
 from typing import Annotated, Any, Self, TypeVar, cast
 
 from fastapi import Query
-from lsst.dax.obscore.siav2 import SIAv2Parameters
+from lsst.dax.obscore.siav2 import (
+    SIAv2Parameters,
+    siav2_parameters_to_query_description,
+)
 
 from ..exceptions import UsageFaultError
 from ..models.common import CaseInsensitiveEnum
@@ -22,6 +25,8 @@ __all__ = [
 ]
 
 T = TypeVar("T", bound=Enum)
+
+MAXREC_LIMIT: int = 60000
 
 
 class CalibLevel(int, Enum):
@@ -147,8 +152,6 @@ class SIAQueryParams(BaseQueryParams):
     with list attributes
     (See: https://github.com/fastapi/fastapi/discussions/10556)
     """
-
-    MAXREC_LIMIT: int = 60000
 
     pos: Annotated[
         list[str] | None,
@@ -353,9 +356,9 @@ class SIAQueryParams(BaseQueryParams):
     def __post_init__(self) -> None:
         """Validate the form parameters."""
         if self.maxrec is None:
-            self.maxrec = self.MAXREC_LIMIT
+            self.maxrec = MAXREC_LIMIT
         else:
-            self.maxrec = min(int(self.maxrec), self.MAXREC_LIMIT)
+            self.maxrec = min(int(self.maxrec), MAXREC_LIMIT)
 
     def to_dict(self) -> dict[str, Any]:
         """Return the query parameters as a dictionary.
@@ -422,3 +425,7 @@ class SIAQueryParams(BaseQueryParams):
         if calib is None:
             return ()
         return cast("list[Integral]", [int(level.value) for level in calib])
+
+    def to_query_description(self) -> str:
+        """Generate query description for DataOrigin metadata."""
+        return siav2_parameters_to_query_description(**self.to_dict())
