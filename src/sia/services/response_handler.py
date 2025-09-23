@@ -12,7 +12,6 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from lsst.daf.butler import Butler
 from lsst.dax.obscore import ExporterConfig
-from lsst.dax.obscore.siav2 import SIAv2Parameters
 from safir.sentry import duration
 from starlette.responses import Response
 
@@ -21,16 +20,13 @@ from ..constants import RESULT_NAME as RESULT
 from ..events import Events, SIAQueryFailed, SIAQuerySucceeded
 from ..factory import Factory
 from ..models.data_collections import ButlerDataCollection
-from ..models.sia_query_params import BandInfo
+from ..models.sia_query_params import BandInfo, SIAQueryParams
 from ..sentry import capturing_start_span
 from ..services.votable import VotableConverterService
 
 logger = structlog.get_logger(__name__)
 
-SIAv2QueryType = Callable[
-    [Butler, ExporterConfig, SIAv2Parameters],
-    astropy.io.votable.tree.VOTableFile,
-]
+SIAv2QueryType = Callable[..., astropy.io.votable.tree.VOTableFile]
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 _TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
@@ -157,7 +153,7 @@ class ResponseHandlerService:
     async def process_query(
         *,
         factory: Factory,
-        params: SIAv2Parameters,
+        raw_params: SIAQueryParams,
         sia_query: SIAv2QueryType,
         request: Request,
         collection: ButlerDataCollection,
@@ -171,7 +167,7 @@ class ResponseHandlerService:
         ----------
         factory
             The Factory instance.
-        params
+        raw_params
             The parameters for the SIAv2 query.
         sia_query
             The SIA query method to use
@@ -193,6 +189,9 @@ class ResponseHandlerService:
         """
         start_time = time.time()
         query_id = str(uuid.uuid4())[:8]
+
+        query_string = raw_params.to_query_description()
+        params = raw_params.to_butler_parameters()
 
         logger.info(
             "SIA query started with params:",
@@ -238,9 +237,18 @@ class ResponseHandlerService:
                     query_id=query_id,
                 )
 
+                query_url = str(request.url)
+
                 # Execute the query
                 table_as_votable = await loop.run_in_executor(
-                    None, lambda: sia_query(butler, obscore_config, params)
+                    None,
+                    lambda: sia_query(
+                        butler,
+                        obscore_config,
+                        params,
+                        query_url=query_url,
+                        query_string=query_string,
+                    ),
                 )
 
                 query_duration = time.time() - query_start_time

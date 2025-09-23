@@ -5,7 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
-from lsst.dax.obscore.siav2 import SIAv2Parameters, siav2_query
+from lsst.dax.obscore.siav2 import siav2_query
 from safir.dependencies.gafaelfawr import auth_dependency
 from safir.dependencies.logger import logger_dependency
 from safir.metadata import get_metadata
@@ -21,6 +21,7 @@ from ..dependencies.query_params import get_sia_params_dependency
 from ..dependencies.token import optional_auth_delegated_token_dependency
 from ..models.data_collections import ButlerDataCollection
 from ..models.index import Index
+from ..models.sia_query_params import SIAQueryParams
 from ..services.availability import AvailabilityService
 from ..services.data_collections import DataCollectionService
 from ..services.response_handler import ResponseHandlerService
@@ -182,7 +183,7 @@ async def query(
     *,
     context: Annotated[RequestContext, Depends(context_dependency)],
     collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
-    params: Annotated[SIAv2Parameters, Depends(get_sia_params_dependency)],
+    raw_params: Annotated[SIAQueryParams, Depends(get_sia_params_dependency)],
     user: Annotated[str, Depends(auth_dependency)],
     delegated_token: Annotated[
         str | None, Depends(optional_auth_delegated_token_dependency)
@@ -190,7 +191,7 @@ async def query(
 ) -> Response:
     return await ResponseHandlerService.process_query(
         factory=context.factory,
-        params=params,
+        raw_params=raw_params,
         token=delegated_token,
         sia_query=siav2_query,
         collection=collection,
