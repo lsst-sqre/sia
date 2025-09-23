@@ -7,6 +7,12 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-1.1.0'></a>
+
+## 1.1.0 (2025-09-23)
+
+- DM-51656: Apply changes to support sending the query_url and query_string for Data Origin
+
 <a id='changelog-1.0.1'></a>
 
 ## 1.0.1 (2025-07-17)
