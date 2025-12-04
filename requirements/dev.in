@@ -18,7 +18,7 @@ pydantic
 pytest
 pytest-asyncio
 pytest-cov
-documenteer[guide]==1.4.2
+documenteer[guide]>2.0
 
 # Documentation
 scriv
