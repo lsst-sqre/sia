@@ -42,9 +42,7 @@ class Factory:
         self._config = config
         self._labeled_butler_factory = labeled_butler_factory
         self._obscore_configs = obscore_configs
-        self._logger = (
-            logger if logger else structlog.get_logger(self._config.name)
-        )
+        self._logger = logger or structlog.get_logger(self._config.name)
 
     def create_butler(
         self,

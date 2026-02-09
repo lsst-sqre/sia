@@ -58,7 +58,7 @@ async def votable_exception_handler(
         )
 
     if isinstance(exc, RequestValidationError):
-        error_message = str(exc)
+        error_message = str(exc.errors())
         exc = UsageFaultError(detail=error_message)
     elif not isinstance(exc, VOTableError):
         exc = DefaultFaultError(detail=str(exc))
@@ -100,7 +100,7 @@ def handle_exceptions(func: Callable[P, R]) -> Callable[P, R]:  # noqa: UP047
             if isinstance(exc, VOTableError):
                 raise exc from exc
             if isinstance(exc, RequestValidationError):
-                raise UsageFaultError(detail=str(exc)) from exc
+                raise UsageFaultError(detail=str(exc.errors())) from exc
             raise exc from exc
 
     return wrapper
