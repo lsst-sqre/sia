@@ -17,6 +17,10 @@ from tests.support.butler import MockButler, MockButlerQueryService
 from tests.support.constants import EXCEPTION_MESSAGES
 from tests.support.validators import validate_votable_error
 
+_TEMPLATE_DIR = str(
+    Path(__file__).resolve().parent.parent.parent / "templates"
+)
+
 
 @pytest.mark.asyncio
 async def test_get_index(client: AsyncClient) -> None:
@@ -236,10 +240,7 @@ async def test_query_maxrec_zero(
         f"{config.path_prefix}/hsc/query?MAXREC=0"
     )
 
-    template_dir = str(
-        Path(__file__).resolve().parent.parent.parent / "templates"
-    )
-    templates_dir = Jinja2Templates(template_dir)
+    templates_dir = Jinja2Templates(_TEMPLATE_DIR)
 
     bands = [
         BandInfo(label="Rubin band HSC-G", low=406.0e-9, high=545.0e-9),

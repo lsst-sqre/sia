@@ -15,14 +15,15 @@ from sia.config import config
 router = APIRouter()
 """FastAPI router for all external handlers."""
 
+_TEMPLATE_DIR = str(
+    Path(__file__).resolve().parent.parent.parent / "templates"
+)
+
 
 @pytest.mark.asyncio
 async def test_capabilities(client: AsyncClient) -> None:
     """Test the capabilities endpoint."""
-    template_dir = str(
-        Path(__file__).resolve().parent.parent.parent / "templates"
-    )
-    templates_dir = Jinja2Templates(template_dir)
+    templates_dir = Jinja2Templates(_TEMPLATE_DIR)
 
     context = {
         "capabilities_url": f"https://example.com"
