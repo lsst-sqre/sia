@@ -1,4 +1,4 @@
-"""Component factory and process-wide status for mobu."""
+"""Component factory and process-wide status for sia."""
 
 from __future__ import annotations
 
