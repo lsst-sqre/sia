@@ -1,11 +1,10 @@
 name: CI
 
 env:
-  # Current supported Python version. For applications, there is generally no
-  # reason to support multiple Python versions, so all actions are run with
-  # this version. Quote the version to avoid interpretation as a floating
-  # point number.
-  PYTHON_VERSION: "3.12"
+  # Current supported uv version. The uv documentation recommends pinning
+  # this. The version should match the version used in .pre-commit-config.yaml
+  # and frozen in uv.lock. It is updated by make update-deps.
+  UV_VERSION: "0.11.29"
 
 "on":
   merge_group: {}
@@ -19,27 +18,13 @@ env:
       - "dependabot/**"
       - "gh-readonly-queue/**"
       - "renovate/**"
+      - "t/**"
       - "tickets/**"
       - "u/**"
     tags:
       - "*"
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
-
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -47,27 +32,32 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Run tox
-        uses: lsst-sqre/run-tox@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          tox-envs: "py,coverage-report,typing"
-          tox-requirements: requirements/tox.txt
+          version: ${{ env.UV_VERSION }}
+
+      - name: Run tox
+        run: uv run --only-group=tox tox run -e lint,typing,py,coverage-report
 
   docs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v7
         with:
           # Ensure the documentation gets the right version.
           fetch-depth: 0
-      - uses: lsst-sqre/run-tox@v1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.12"
-          tox-envs: docs
-          tox-requirements: "requirements/tox.txt"
-          cache-key-prefix: docs
+          version: ${{ env.UV_VERSION }}
+
+      - name: Run tox
+        run: uv run --only-group=tox tox run -e docs
+
       # Only attempt documentation uploads for long-lived branches, tagged
       # releases, and pull requests from ticket branches.  This avoids version
       # clutter in the docs and failures when a PR doesn't have access to
@@ -81,25 +71,30 @@ jobs:
         if: >
           github.event_name != 'merge_group'
           && (github.event_name != 'pull_request'
-              || startsWith(github.head_ref, 'tickets/'))
+              || startsWith(github.head_ref, 'tickets/')
+              || startsWith(github.head_ref, 't/'))
+
   linkcheck:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v7
         with:
           # Ensure the documentation gets the right version.
           fetch-depth: 0
-      - name: Check links
-        uses: lsst-sqre/run-tox@v1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.12"
-          tox-envs: docs-linkcheck
-          tox-requirements: "requirements/tox.txt"
+          version: ${{ env.UV_VERSION }}
+
+      - name: Run tox
+        run: uv run --only-group=tox tox run -e docs-linkcheck
 
   build:
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs: [test]
     timeout-minutes: 10
 
     # Only do Docker builds of tagged releases and pull requests from ticket

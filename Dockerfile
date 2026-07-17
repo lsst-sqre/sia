@@ -21,28 +21,31 @@ RUN ./install-base-packages.sh && rm ./install-base-packages.sh
 FROM base-image AS install-image
 
 # Install uv.
-COPY --from=ghcr.io/astral-sh/uv:0.4.9 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.29 /uv /bin/uv
 
 # Install system packages only needed for building dependencies.
 COPY scripts/install-dependency-packages.sh .
 RUN ./install-dependency-packages.sh
 
-# Create a Python virtual environment
-ENV VIRTUAL_ENV=/opt/venv
-RUN python -m venv $VIRTUAL_ENV
+# Disable hard links during uv package installation since we're using a
+# cache on a separate file system.
+ENV UV_LINK_MODE=copy
 
-# Make sure we use the virtualenv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# Force use of system Python so that the Python version is controlled by
+# the Docker base image version, not by whatever uv decides to install.
+ENV UV_PYTHON_PREFERENCE=only-system
 
-# Install the app's Python runtime dependencies
-COPY requirements/main.txt ./requirements.txt
-RUN uv pip install  --compile-bytecode --verify-hashes --no-cache \
-    -r requirements.txt
+# Install the dependencies.
+WORKDIR /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-default-groups --compile-bytecode --no-install-project
 
-# Install the application.
-COPY . /workdir
-WORKDIR /workdir
-RUN uv pip install --compile-bytecode --no-cache .
+# Install the application itself.
+ADD . /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-default-groups --compile-bytecode --no-editable
 
 FROM base-image AS runtime-image
 
@@ -50,18 +53,17 @@ FROM base-image AS runtime-image
 RUN useradd --create-home appuser
 
 # Copy the virtualenv
-COPY --from=install-image /opt/venv /opt/venv
-
-WORKDIR /app
-
-# Make sure we use the virtualenv
-ENV PATH="/opt/venv/bin:$PATH"
+COPY --from=install-image /app/.venv /app/.venv
 
 # Switch to the non-root user.
 USER appuser
 
 # Expose the port.
 EXPOSE 8080
+
+# Make sure we use the virtualenv
+WORKDIR /app
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Run the application.
 CMD ["uvicorn", "sia.main:app", "--host", "0.0.0.0", "--port", "8080"]

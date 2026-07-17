@@ -17,8 +17,26 @@ classifiers = [
     "Typing :: Typed",
 ]
 requires-python = ">=3.12"
-# Use requirements/main.in for runtime dependencies instead.
-dependencies = []
+dependencies = [
+    "astropy",
+    "boto3",
+    "defusedxml",
+    "fastapi",
+    "google-cloud-storage",
+    "jinja2",
+    "lsst-daf-butler[postgres,remote]",
+    "lsst-dax-obscore",
+    "numpy",
+    "pydantic",
+    "pydantic-settings",
+    "pydantic-xml",
+    "python-multipart",
+    "requests",
+    "safir[kafka]>=14.1.2",
+    "starlette",
+    "uvicorn[standard]",
+    "vo-models",
+]
 dynamic = ["version"]
 
 [project.scripts]
@@ -31,6 +49,33 @@ Source = "https://github.com/lsst-sqre/sia"
 [build-system]
 requires = ["setuptools>=61", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "asgi-lifespan",
+    "coverage[toml]>=5.0.2",
+    "httpx",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+]
+docs = [
+    "documenteer[guide]>2.0",
+    "scriv",
+    "sphinx-prompt==1.9.0",
+]
+lint = [
+    "pre-commit",
+    "pre-commit-uv",
+    "ruff>=0.12",
+]
+tox = [
+    "tox",
+    "tox-uv-bare",
+]
+typing = [
+    "mypy",
+]
 
 [tool.setuptools_scm]
 
