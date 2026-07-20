@@ -13,7 +13,7 @@ env:
     branches-ignore:
       # These should always correspond to pull requests, so ignore them for
       # the push trigger and let them be triggered by the pull_request
-      # trigger, avoiding running the workflow twice.  This is a minor
+      # trigger, avoiding running the workflow twice. This is a minor
       # optimization so there's no need to ensure this is comprehensive.
       - "dependabot/**"
       - "gh-readonly-queue/**"
@@ -21,8 +21,8 @@ env:
       - "t/**"
       - "tickets/**"
       - "u/**"
-    tags:
-      - "*"
+  release:
+    types: [published]
 
 jobs:
   test:
@@ -40,9 +40,40 @@ jobs:
       - name: Run nox
         run: uv run --only-group=nox nox -s lint typing test coverage-report
 
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      pull-requests: read
+    outputs:
+      docs: ${{ steps.filter.outputs.docs }}
+      docs-specific: ${{ steps.filter.outputs.docs-specific }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            docs:
+              - "CHANGELOG.md"
+              - "docs/**"
+              - "src/sia/**"
+            docs-specific:
+              - "CHANGELOG.md"
+              - "docs/**"
+
   docs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    needs: changes
+    if: >-
+      (needs.changes.outputs.docs == 'true')
+      || (github.event_name == 'workflow_dispatch')
+      || (github.event_name == 'release' && github.event.action == 'published')
 
     steps:
       - uses: actions/checkout@v7
@@ -59,20 +90,23 @@ jobs:
         run: uv run --only-group=nox nox -s docs
 
       # Only attempt documentation uploads for long-lived branches, tagged
-      # releases, and pull requests from ticket branches.  This avoids version
+      # releases, and pull requests from ticket branches. This avoids version
       # clutter in the docs and failures when a PR doesn't have access to
       # secrets.
-      - uses: lsst-sqre/ltd-upload@v1
+      - name: Upload to LSST the Docs
+        uses: lsst-sqre/ltd-upload@v1
         with:
-          project: sia
+          project: "sia"
           dir: "docs/_build/html"
           username: ${{ secrets.LTD_USERNAME }}
           password: ${{ secrets.LTD_PASSWORD }}
         if: >
-          github.event_name != 'merge_group'
-          && (github.event_name != 'pull_request'
-              || startsWith(github.head_ref, 'tickets/')
-              || startsWith(github.head_ref, 't/'))
+          (github.event_name == 'push' && github.ref_name == 'main')
+          || (github.event_name == 'workflow_dispatch')
+          || (github.event_name == 'pull_request'
+              && (startsWith(github.head_ref, 'tickets/')
+                  || startsWith(github.head_ref, 't/'))
+              && needs.changes.outputs.docs-specific == 'true')
 
   linkcheck:
     runs-on: ubuntu-latest
