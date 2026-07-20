@@ -33,7 +33,7 @@ jobs:
         run: make update-deps
 
       - name: Run nox
-        run: uv run --only-group=nox nox -s lint typing test
+        run: uv run --only-group=nox nox -s lint typing test docs
 
       - name: Report status
         if: failure()
