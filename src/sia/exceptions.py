@@ -3,6 +3,7 @@ VOTAble.
 """
 
 from pathlib import Path
+from typing import override
 
 from fastapi.exceptions import HTTPException
 from fastapi.templating import Jinja2Templates
@@ -23,6 +24,7 @@ class VOTableError(HTTPException):
     ) -> None:
         super().__init__(detail=detail, status_code=status_code)
 
+    @override
     def __str__(self) -> str:
         return f"{self.detail}"
 

@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from enum import Enum
 from numbers import Integral
-from typing import Annotated, Any, Self, TypeVar, cast
+from typing import Annotated, Any, Self, TypeVar, cast, override
 
 from fastapi import Query
 from lsst.dax.obscore.siav2 import (
@@ -370,6 +370,7 @@ class SIAQueryParams(BaseQueryParams):
         """
         return {k: v for k, v in asdict(self).items() if v is not None}
 
+    @override
     def to_butler_parameters(self) -> SIAv2Parameters:
         """Convert the query parameters to SIAv2Parameters. Exclude None
         values.
