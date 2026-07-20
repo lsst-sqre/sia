@@ -18,37 +18,12 @@ __all__ = ["Config", "config"]
 class Config(BaseSettings):
     """Configuration for sia."""
 
-    name: str = Field("sia", title="Name of application")
-    """Name of application."""
-
-    path_prefix: str = Field("/api/sia", title="URL prefix for application")
-    """URL prefix for application."""
-
-    profile: Profile = Field(
-        Profile.development, title="Application logging profile"
-    )
-    """Application logging profile."""
-
-    log_level: LogLevel = Field(
-        LogLevel.INFO, title="Log level of the application's logger"
-    )
-    """Log level of the application's logger."""
-
-    metrics: MetricsConfiguration = Field(
-        default_factory=metrics_configuration_factory,
-        title="Metrics configuration",
-        description="Configuration for reporting metrics to Kafka",
-    )
-    """Configuration for reporting metrics to Kafka."""
-
     model_config = SettingsConfigDict(env_prefix="SIA_", case_sensitive=False)
-    """Configuration for the model settings."""
 
     butler_data_collections: Annotated[
         list[ButlerDataCollection],
         Field(title="Data collections"),
     ]
-    """Configuration for the data collections."""
 
     environment_name: Annotated[
         str,
@@ -59,12 +34,24 @@ class Config(BaseSettings):
             ),
         ),
     ]
-    """The environment name in Phalanx."""
 
-    slack_webhook: Annotated[
-        HttpUrl | None, Field(title="Slack webhook for exception reporting")
-    ] = None
-    """Slack webhook for exception reporting."""
+    log_level: LogLevel = Field(
+        LogLevel.INFO, title="Log level of the application's logger"
+    )
+
+    metrics: MetricsConfiguration = Field(
+        default_factory=metrics_configuration_factory,
+        title="Metrics configuration",
+        description="Configuration for reporting metrics to Kafka",
+    )
+
+    name: str = Field("sia", title="Name of application")
+
+    path_prefix: str = Field("/api/sia", title="URL prefix for application")
+
+    profile: Profile = Field(
+        Profile.development, title="Application logging profile"
+    )
 
     sentry_dsn: Annotated[
         str | None,
@@ -73,7 +60,6 @@ class Config(BaseSettings):
             description="DSN for sending events to Sentry.",
         ),
     ] = None
-    """DSN for sending events to Sentry."""
 
     sentry_traces_sample_rate: Annotated[
         float,
@@ -88,7 +74,10 @@ class Config(BaseSettings):
             le=1,
         ),
     ] = 0
-    """The percentage of transactions to send to Sentry."""
+
+    slack_webhook: Annotated[
+        HttpUrl | None, Field(title="Slack webhook for exception reporting")
+    ] = None
 
     @model_validator(mode="after")
     def _validate_butler_data_collections(self) -> Self:

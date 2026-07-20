@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from enum import Enum
 from numbers import Integral
-from typing import Annotated, Any, Self, TypeVar, cast, override
+from typing import Annotated, Any, Self, cast, override
 
 from fastapi import Query
 from lsst.dax.obscore.siav2 import (
@@ -23,8 +23,6 @@ __all__ = [
     "SIAQueryParams",
     "Shape",
 ]
-
-T = TypeVar("T", bound=Enum)
 
 MAXREC_LIMIT: int = 60000
 
