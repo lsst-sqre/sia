@@ -1,7 +1,7 @@
 """Common models used by in different places in the application."""
 
 from enum import Enum
-from typing import Self
+from typing import Self, override
 
 __all__ = ["CaseInsensitiveEnum"]
 
@@ -11,6 +11,7 @@ class CaseInsensitiveEnum(Enum):
     This class allows for case-insensitive comparisons of Enum values.
     """
 
+    @override
     @classmethod
     def _missing_(cls, value: object) -> Self | None:
         """Return the Enum member that matches the given value.

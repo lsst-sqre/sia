@@ -1,6 +1,7 @@
 """Service for checking the availability of the system."""
 
 from abc import ABC, abstractmethod
+from typing import override
 
 from httpx import AsyncClient
 from vo_models.vosi.availability import Availability
@@ -34,6 +35,7 @@ class AvailabilityChecker(ABC):
 class DirectButlerAvailabilityChecker(AvailabilityChecker):
     """Checker for the availability of the direct Butler based service."""
 
+    @override
     async def check_availability(
         self, *, collection: ButlerDataCollection
     ) -> Availability:
@@ -57,6 +59,7 @@ class DirectButlerAvailabilityChecker(AvailabilityChecker):
 class RemoteButlerAvailabilityChecker(AvailabilityChecker):
     """Checker for the availability of a remote Butler based service."""
 
+    @override
     async def check_availability(
         self, *, collection: ButlerDataCollection
     ) -> Availability:

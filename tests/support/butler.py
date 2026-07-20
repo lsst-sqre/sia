@@ -1,7 +1,7 @@
 """Support module for mockign a Butler."""
 
 from collections.abc import Iterator
-from typing import Any
+from typing import Any, override
 from unittest.mock import Mock, patch
 from uuid import UUID, uuid4
 
@@ -102,6 +102,7 @@ class MockButler(Mock):
             return f"s3://some-bucket/{ref.uuid!s}"
         return self.mock_uri
 
+    @override
     def _get_child_mock(self, /, **kwargs: Any) -> Mock:
         return Mock(**kwargs)
 

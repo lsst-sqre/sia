@@ -21,7 +21,7 @@ RUN ./install-base-packages.sh && rm ./install-base-packages.sh
 FROM base-image AS install-image
 
 # Install uv.
-COPY --from=ghcr.io/astral-sh/uv:0.11.29 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.30 /uv /bin/uv
 
 # Install system packages only needed for building dependencies.
 COPY scripts/install-dependency-packages.sh .

@@ -8,12 +8,11 @@ from pathlib import Path
 
 import astropy
 import structlog
-from fastapi import Request
+from fastapi import Request, Response
 from fastapi.templating import Jinja2Templates
 from lsst.daf.butler import Butler
 from lsst.dax.obscore import ExporterConfig
 from safir.sentry import duration
-from starlette.responses import Response
 
 from ..constants import BASE_RESOURCE_IDENTIFIER
 from ..constants import RESULT_NAME as RESULT
