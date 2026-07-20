@@ -8,7 +8,7 @@ called.
 """
 
 import json
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from importlib.metadata import metadata, version
 
@@ -45,7 +45,7 @@ enable_sentry()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Set up and tear down the application."""
     logger.debug("SIA has started up.")
     await labeled_butler_factory_dependency.initialize(config=config)

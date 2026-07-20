@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Iterator
+from collections.abc import AsyncGenerator, Iterator
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
@@ -29,7 +29,7 @@ BASE_PATH = Path(__file__).parent
 
 
 @pytest_asyncio.fixture
-async def app(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[FastAPI]:
+async def app(monkeypatch: pytest.MonkeyPatch) -> AsyncGenerator[FastAPI]:
     """Return a configured test application.
 
     Wraps the application in a lifespan manager so that startup and shutdown
@@ -74,7 +74,7 @@ async def app(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[FastAPI]:
 
 
 @pytest_asyncio.fixture
-async def client(app: FastAPI) -> AsyncIterator[AsyncClient]:
+async def client(app: FastAPI) -> AsyncGenerator[AsyncClient]:
     """Return an ``httpx.AsyncClient`` configured to talk to the test app."""
     async with AsyncClient(
         transport=ASGITransport(app=app),
@@ -90,7 +90,7 @@ async def client(app: FastAPI) -> AsyncIterator[AsyncClient]:
 @pytest_asyncio.fixture
 async def app_direct(
     monkeypatch: pytest.MonkeyPatch,
-) -> AsyncIterator[FastAPI]:
+) -> AsyncGenerator[FastAPI]:
     """Return a configured test application.
 
     Wraps the application in a lifespan manager so that startup and shutdown
@@ -117,7 +117,7 @@ async def app_direct(
 
 
 @pytest_asyncio.fixture
-async def client_direct(app_direct: FastAPI) -> AsyncIterator[AsyncClient]:
+async def client_direct(app_direct: FastAPI) -> AsyncGenerator[AsyncClient]:
     """Return an ``httpx.AsyncClient`` configured to talk to the test app."""
     async with AsyncClient(
         transport=ASGITransport(app=app_direct),
