@@ -19,69 +19,73 @@ class ButlerDataCollection:
     config: Annotated[
         HttpUrl | Path,
         Field(
-            description="Config Path or URL to obscore config for collection",
+            title="ObsCore configuration",
+            description="Config path or URL to obscore config for collection",
             examples=[
                 "https://example.com/butler-repo/path/to/local/dp02.yaml",
                 "/path/to/local/butler/dp02.yaml",
             ],
         ),
     ]
-    """The obscore configuration file for this data collection."""
 
     repository: Annotated[
         HttpUrl | Path,
         Field(
-            description="Butler Repository Path or URL",
+            title="Butler repository",
+            description="Butler repository path or URL",
             examples=[
                 "https://example.com/butler-repo/path/to/local/repository",
                 "/path/to/local/butler/repository",
             ],
         ),
     ]
-    """Butler Repository Path or URL"""
 
     label: Annotated[
         str,
         Field(
-            description="The label for this Butler collection. Used to "
-            "identify the collection in the case where we are "
-            "using a Remote Butler",
+            title="Butler label",
+            description=(
+                "The label for this Butler collection. Used to identify the"
+                " collection in the case where we are using a remote Butler."
+            ),
             examples=["LSST.DP02"],
         ),
     ]
-    """The label for this Butler collection"""
 
     name: Annotated[
         str,
         Field(
-            description="The name for this Butler collection. This value is "
-            "used to identify the collection in API URLs. "
-            "For example, a name of 'dp02' would be used in the URL "
-            "'/api/sia/dp02/query'.",
+            title="Name of Butler collection",
+            description=(
+                "The name for this Butler collection. This value is used to"
+                " identify the collection in API URLs. For example, a name of"
+                " 'dp02' would be used in the URL '/api/sia/dp02/query'."
+            ),
             examples=["dp02"],
         ),
     ]
-    """The name for this Butler collection."""
 
     butler_type: Annotated[
         ButlerType,
         Field(
+            title="Butler type",
             description="The Butler type for this data collection.",
             examples=["REMOTE", "DIRECT"],
         ),
     ]
-    """The Butler type for this data collection."""
 
     datalink_url: Annotated[
         HttpUrl | None,
         Field(
             default=None,
-            description="An optional datalink URL to use instead of the one "
-            "in the config. This will overwrite the value in the obscore "
-            "configuration for the collection",
+            title="DataLink URL",
+            description=(
+                "An optional datalink URL to use instead of the one in the"
+                " config. This will overwrite the value in the obscore"
+                " configuration for the collection"
+            ),
         ),
     ] = None
-    """An optional datalink URL to use instead of the one in the config"""
 
     @property
     def identifier(self) -> str:
