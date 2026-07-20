@@ -2580,6 +2580,7 @@ dependencies = [
     { name = "python-multipart" },
     { name = "requests" },
     { name = "safir", extra = ["kafka"] },
+    { name = "structlog" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "vo-models" },
 ]
@@ -2628,6 +2629,7 @@ requires-dist = [
     { name = "python-multipart" },
     { name = "requests" },
     { name = "safir", extras = ["kafka"], specifier = ">=14.1.2" },
+    { name = "structlog" },
     { name = "uvicorn", extras = ["standard"] },
     { name = "vo-models" },
 ]
