@@ -47,7 +47,7 @@ class Factory:
     def create_butler(
         self,
         butler_collection: ButlerDataCollection,
-        token: str | None = None,
+        token: str,
     ) -> Butler:
         """Create a Butler instance.
 

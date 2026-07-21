@@ -120,6 +120,11 @@ class MockButler(Mock):
         mock.return_value = 1234
         return resource_path
 
+    def query_dimension_records(self, query: str) -> list[str]:
+        record = Mock()
+        record.name = "HSC"
+        return [record]
+
 
 def patch_butler() -> Iterator[MockButler]:
     """Mock out Butler for testing."""

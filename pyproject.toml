@@ -24,7 +24,7 @@ dependencies = [
     "fastapi>=0.100",
     "google-cloud-storage",
     "jinja2",
-    "lsst-daf-butler[postgres,remote]",
+    "lsst-daf-butler[remote]",
     "lsst-dax-obscore",
     "numpy",
     "pydantic>=2",

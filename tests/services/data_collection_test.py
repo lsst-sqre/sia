@@ -14,15 +14,13 @@ BASE_PATH = Path(__file__).parent
 
 
 @pytest.mark.asyncio
-async def test_get_data_repositories(test_config_remote: Config) -> None:
+async def test_get_data_repositories(test_config: Config) -> None:
     """Test get_data_repositories function."""
     expected_repos = {
         "LSST.DP02": "https://example.com/api/butler/repo/dp02/butler.yaml"
     }
 
-    result = DataCollectionService(
-        config=test_config_remote
-    ).get_data_repositories()
+    result = DataCollectionService(config=test_config).get_data_repositories()
 
     assert result == expected_repos, (
         f"Expected {expected_repos}, but got {result}"
@@ -36,12 +34,12 @@ async def test_get_data_repositories(test_config_remote: Config) -> None:
 
 @pytest.mark.asyncio
 async def test_get_data_collection_with_label(
-    test_config_remote: Config,
+    test_config: Config,
 ) -> None:
     """Test get_data_collection function with a label."""
     label = "LSST.DP02"
     result = DataCollectionService(
-        config=test_config_remote
+        config=test_config
     ).get_data_collection_by_label(label=label)
     assert result.label == label
     assert result.repository == HttpUrl(
@@ -51,12 +49,12 @@ async def test_get_data_collection_with_label(
 
 @pytest.mark.asyncio
 async def test_get_data_collection_with_name(
-    test_config_remote: Config,
+    test_config: Config,
 ) -> None:
     """Test get_data_collection function with a name."""
     name = "dp02"
     result = DataCollectionService(
-        config=test_config_remote
+        config=test_config
     ).get_data_collection_by_name(name=name)
     assert result.name == name
     assert result.repository == HttpUrl(
@@ -66,16 +64,16 @@ async def test_get_data_collection_with_name(
 
 @pytest.mark.asyncio
 async def test_get_data_collection_no_label(
-    test_config_remote: Config,
+    test_config: Config,
 ) -> None:
     """Test get_data_collection function with no label."""
     with pytest.raises(
         ValueError,
         match=re.escape("Label is required."),
     ):
-        DataCollectionService(
-            config=test_config_remote
-        ).get_data_collection_by_label(label="")
+        DataCollectionService(config=test_config).get_data_collection_by_label(
+            label=""
+        )
 
 
 @pytest.mark.asyncio
@@ -98,13 +96,13 @@ async def test_get_data_collection_empty_config() -> None:
 
 @pytest.mark.asyncio
 async def test_get_data_collection_invalid_label(
-    test_config_remote: Config,
+    test_config: Config,
 ) -> None:
     """Test get_data_collection function with an invalid label."""
     with pytest.raises(
         KeyError,
         match="Label InvalidLabel not found in Data collections",
     ):
-        DataCollectionService(
-            config=test_config_remote
-        ).get_data_collection_by_label(label="InvalidLabel")
+        DataCollectionService(config=test_config).get_data_collection_by_label(
+            label="InvalidLabel"
+        )

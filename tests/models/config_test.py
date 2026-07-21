@@ -13,7 +13,7 @@ from sia.models.data_collections import ButlerDataCollection
 
 @pytest.mark.asyncio
 async def test_empty_config(
-    test_config_remote: Config, monkeypatch: pytest.MonkeyPatch
+    test_config: Config, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Test that an empty Config raises a FatalFaultError."""
     monkeypatch.setenv("SIA_BUTLER_DATA_COLLECTIONS", "")
@@ -28,7 +28,7 @@ async def test_empty_config(
 
 @pytest.mark.asyncio
 async def test_config_no_butler_type(
-    test_config_remote: Config, monkeypatch: pytest.MonkeyPatch
+    test_config: Config, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Test that a Config with no default collection raises a
     FatalFaultError.
