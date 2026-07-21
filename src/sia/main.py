@@ -12,6 +12,7 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from importlib.metadata import metadata, version
 
+import structlog
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
@@ -23,8 +24,8 @@ from safir.middleware.ivoa import (
 )
 from safir.middleware.x_forwarded import XForwardedMiddleware
 from safir.slack.webhook import SlackRouteErrorHandler
-from structlog import get_logger
 
+from . import __version__
 from .config import config
 from .dependencies.context import context_dependency
 from .dependencies.labeled_butler_factory import (
@@ -40,13 +41,13 @@ from .sentry import enable_sentry
 __all__ = ["app"]
 
 
-logger = get_logger(__name__)
-enable_sentry()
+enable_sentry(__version__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Set up and tear down the application."""
+    logger = structlog.get_logger("sia")
     logger.debug("SIA has started up.")
     await labeled_butler_factory_dependency.initialize(config=config)
     await obscore_config_dependency.initialize(config=config)
@@ -130,6 +131,7 @@ app.add_middleware(XForwardedMiddleware)
 # Configure Slack alerts.
 if config.slack_webhook:
     webhook = str(config.slack_webhook)
+    logger = structlog.get_logger("sia")
     SlackRouteErrorHandler.initialize(webhook, config.name, logger)
     logger.debug("Initialized Slack webhook")
 

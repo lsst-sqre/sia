@@ -8,70 +8,40 @@ from contextlib import contextmanager
 from re import Pattern
 from typing import Any
 
-try:
-    import sentry_sdk
-    from safir.sentry import before_send_handler
-    from sentry_sdk.tracing import Span
-    from sentry_sdk.types import Event
+import sentry_sdk
+from safir.sentry import (
+    SentryConfig,
+    before_send_handler,
+    should_enable_sentry,
+)
+from sentry_sdk.tracing import Span
+from sentry_sdk.types import Event
 
-    _SENTRY_AVAILABLE = True
-except ImportError:
-    sentry_sdk = None  # type: ignore[assignment]
-    before_send_handler = None  # type: ignore[assignment]
-    Span = None  # type: ignore[assignment,misc]
-    Event = None  # type: ignore[assignment,misc]
-    _SENTRY_AVAILABLE = False
-
-from .config import config
-
-__all__ = ["capturing_start_span", "enable_sentry", "make_traces_sampler"]
+__all__ = ["capturing_start_span", "enable_sentry"]
 
 
-def enable_sentry() -> None:
-    """Enable Sentry telemetry."""
-    if not _SENTRY_AVAILABLE:
-        return
+def _before_send_filter(event: Event, hint: dict[str, Any]) -> Event | None:
+    """Filter out ValueError errors from Sentry events."""
+    if "exc_info" in hint:
+        exc_type, _, _ = hint["exc_info"]
+        if exc_type is ValueError or exc_type.__name__ == "UsageFaultError":
+            return None
 
-    def before_send_filter(event: Event, hint: dict[str, Any]) -> Event | None:
-        """Filter out ValueError errors from Sentry events."""
-        if "exc_info" in hint:
-            exc_type, _, _ = hint["exc_info"]
-            if (
-                exc_type is ValueError
-                or exc_type.__name__ == "UsageFaultError"
-            ):
+    if event.get("level") == "error":
+        extra_data = event.get("extra", {})
+        if extra_data.get("error_type") == "UsageFaultError":
+            return None
+
+        logentry = event.get("logentry")
+        if logentry is not None:
+            message = logentry.get("message", "")
+            if isinstance(message, str) and "UsageFaultError" in message:
                 return None
 
-        if event.get("level") == "error":
-            extra_data = event.get("extra", {})
-            if extra_data.get("error_type") == "UsageFaultError":
-                return None
-
-            logentry = event.get("logentry")
-            if logentry is not None:
-                log_message = logentry.get("message", "")
-                if (
-                    isinstance(log_message, str)
-                    and "UsageFaultError" in log_message
-                ):
-                    return None
-
-        return before_send_handler(event, hint)
-
-    sampler = make_traces_sampler(
-        original_rate=config.sentry_traces_sample_rate,
-        exclude_patterns=["/", re.compile(r"^/healthcheck(/.*)?$")],
-    )
-
-    sentry_sdk.init(
-        dsn=config.sentry_dsn,
-        environment=config.environment_name,
-        before_send=before_send_filter,
-        traces_sampler=sampler,
-    )
+    return before_send_handler(event, hint)
 
 
-def make_traces_sampler(
+def _make_traces_sampler(
     original_rate: float,
     exclude_patterns: list[str | Pattern] | None = None,
 ) -> Callable[[dict[str, Any]], float]:
@@ -91,7 +61,7 @@ def make_traces_sampler(
 
     Returns
     -------
-    Callable[[dict[str, Any]], float]
+    typing.Callable
         The traces sampler.
 
     """
@@ -129,18 +99,42 @@ def make_traces_sampler(
     return traces_sampler
 
 
+def enable_sentry(release: str) -> None:
+    """Enable Sentry telemetry.
+
+    Ideally this would use `safir.sentry.initialize_sentry` directly, but it
+    doesn't currently have support for overriding the ``before_send``
+    parameter or excluding routes from trace samplers.
+
+    Parameters
+    ----------
+    release
+        The version of this application that should be sent with every Sentry
+        event. For most Safir applications, you should pass the value in
+        ``<package>.__version__``.
+    """
+    if not should_enable_sentry():
+        return
+
+    config = SentryConfig()
+    sampler = _make_traces_sampler(
+        original_rate=config.traces_sample_rate,
+        exclude_patterns=["/", re.compile(r"^/healthcheck(/.*)?$")],
+    )
+    sentry_sdk.init(
+        dsn=config.dsn,
+        environment=config.environment,
+        before_send=_before_send_filter,
+        traces_sampler=sampler,
+    )
+
+
 @contextmanager
 def capturing_start_span(op: str, **kwargs: Any) -> Generator[Span]:
     """Start a span, set the start time in the context and capture errors."""
-    if not _SENTRY_AVAILABLE:
-        # Return a dummy context manager that yields None
-        yield None  # type: ignore[misc]
-        return
-
     with sentry_sdk.start_span(op=op, **kwargs) as span:
-        sentry_sdk.get_isolation_scope().set_context(
-            "phase", {"phase": op, "started_at": span.start_timestamp}
-        )
+        context = {"phase": op, "started_at": span.start_timestamp}
+        sentry_sdk.get_isolation_scope().set_context("phase", context)
         sentry_sdk.get_isolation_scope().set_tag("phase", op)
 
         span.set_tag("started_at", span.start_timestamp)
