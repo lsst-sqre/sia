@@ -1,7 +1,5 @@
 """Tests for cutout parameter models."""
 
-from __future__ import annotations
-
 import pytest
 
 from sia.models.common import CaseInsensitiveEnum

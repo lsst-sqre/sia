@@ -1,7 +1,5 @@
 """Sentry integration helpers."""
 
-from __future__ import annotations
-
 import re
 from collections.abc import Callable, Generator
 from contextlib import contextmanager

@@ -1,7 +1,5 @@
 """Tests for the sia.handlers.external module and routes."""
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import Any
