@@ -33,6 +33,7 @@ dependencies = [
     "python-multipart",
     "requests",
     "safir[kafka]>=14.1.2",
+    "sentry-sdk>=2",
     "structlog",
     "uvicorn[standard]",
     "vo-models",

@@ -25,18 +25,12 @@ class Config(BaseSettings):
         Field(title="Data collections"),
     ]
 
-    environment_name: Annotated[
-        str,
-        Field(
-            alias="SIA_ENVIRONMENT_NAME",
-            description=(
-                "The Phalanx name of the Rubin Science Platform environment."
-            ),
-        ),
-    ]
-
     log_level: LogLevel = Field(
         LogLevel.INFO, title="Log level of the application's logger"
+    )
+
+    log_profile: Profile = Field(
+        Profile.development, title="Application logging profile"
     )
 
     metrics: MetricsConfiguration = Field(
@@ -48,32 +42,6 @@ class Config(BaseSettings):
     name: str = Field("sia", title="Name of application")
 
     path_prefix: str = Field("/api/sia", title="URL prefix for application")
-
-    log_profile: Profile = Field(
-        Profile.development, title="Application logging profile"
-    )
-
-    sentry_dsn: Annotated[
-        str | None,
-        Field(
-            alias="SIA_SENTRY_DSN",
-            description="DSN for sending events to Sentry.",
-        ),
-    ] = None
-
-    sentry_traces_sample_rate: Annotated[
-        float,
-        Field(
-            alias="SIA_SENTRY_TRACES_SAMPLE_RATE",
-            description=(
-                "The percentage of transactions to send to Sentry, expressed "
-                "as a float between 0 and 1. 0 means send no traces, 1 means "
-                "send every trace."
-            ),
-            ge=0,
-            le=1,
-        ),
-    ] = 0
 
     slack_webhook: Annotated[
         HttpUrl | None, Field(title="Slack webhook for exception reporting")
