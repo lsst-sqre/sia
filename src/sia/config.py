@@ -49,7 +49,7 @@ class Config(BaseSettings):
 
     path_prefix: str = Field("/api/sia", title="URL prefix for application")
 
-    profile: Profile = Field(
+    log_profile: Profile = Field(
         Profile.development, title="Application logging profile"
     )
 
