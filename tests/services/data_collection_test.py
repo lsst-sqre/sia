@@ -1,7 +1,6 @@
 """Tests for the config_reader module."""
 
 import re
-from pathlib import Path
 
 import pytest
 from pydantic import HttpUrl
@@ -9,8 +8,6 @@ from pydantic import HttpUrl
 from sia.config import Config
 from sia.exceptions import FatalFaultError
 from sia.services.data_collections import DataCollectionService
-
-BASE_PATH = Path(__file__).parent
 
 
 @pytest.mark.asyncio

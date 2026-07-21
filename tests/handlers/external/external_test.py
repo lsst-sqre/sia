@@ -1,7 +1,5 @@
 """Tests for the sia.handlers.external module and routes."""
 
-import re
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -15,9 +13,7 @@ from tests.support.butler import MockButler, MockButlerQueryService
 from tests.support.constants import EXCEPTION_MESSAGES
 from tests.support.validators import validate_votable_error
 
-_TEMPLATE_DIR = str(
-    Path(__file__).resolve().parent.parent.parent / "templates"
-)
+from ...support.data import SiaData
 
 
 @pytest.mark.asyncio
@@ -77,6 +73,8 @@ async def test_get_index(client: AsyncClient) -> None:
     ],
 )
 async def test_query_endpoint_mocker_get(
+    *,
+    data: SiaData,
     client: AsyncClient,
     query_params: str,
     expected_status: int,
@@ -84,7 +82,6 @@ async def test_query_endpoint_mocker_get(
     expected_message: str | None,
     mock_siav2_query: MockButlerQueryService,
     mock_butler: MockButler,
-    expected_votable: str,
 ) -> None:
     """Test ``GET /api/sia/query`` with valid parameters but use a Mocker
     for the Butler SIAv2 query.
@@ -92,16 +89,7 @@ async def test_query_endpoint_mocker_get(
     response = await client.get(
         f"{config.path_prefix}/dp02/query?{query_params}",
     )
-
-    # Remove XML declaration and comments
-    cleaned_response = re.sub(
-        r"<\?xml.*?\?>\s*", "", response.text, flags=re.DOTALL
-    )
-    cleaned_response = re.sub(
-        r"<!--.*?-->\s*", "", cleaned_response, flags=re.DOTALL
-    )
-
-    assert cleaned_response == expected_votable
+    data.assert_votable_matches(response.text, "templates/votable.xml")
     assert response.status_code == expected_status
     assert response.headers["content-type"] == expected_content_type
     assert "content-disposition" in response.headers
@@ -217,7 +205,6 @@ async def test_query_endpoint_post(
     expected_status: int,
     expected_content_type: str,
     expected_message: str | None,
-    expected_votable: str,
     mock_siav2_query: MockButlerQueryService,
     mock_butler: MockButler,
 ) -> None:
@@ -238,22 +225,14 @@ async def test_query_endpoint_post(
 
 @pytest.mark.asyncio
 async def test_query_maxrec_zero(
+    *,
+    data: SiaData,
     client: AsyncClient,
     mock_siav2_query: MockButlerQueryService,
     mock_butler: MockButler,
 ) -> None:
     response = await client.get(f"{config.path_prefix}/dp02/query?MAXREC=0")
-
-    templates_dir = Jinja2Templates(_TEMPLATE_DIR)
-
-    bands = [
-        BandInfo(label="Rubin band u", low=330.0e-9, high=400.0e-9),
-        BandInfo(label="Rubin band g", low=402.0e-9, high=552.0e-9),
-        BandInfo(label="Rubin band r", low=552.0e-9, high=691.0e-9),
-        BandInfo(label="Rubin band i", low=691.0e-9, high=818.0e-9),
-        BandInfo(label="Rubin band z", low=818.0e-9, high=922.0e-9),
-        BandInfo(label="Rubin band y", low=970.0e-9, high=1060.0e-9),
-    ]
+    templates = Jinja2Templates(data.path("templates"))
 
     context = {
         "instruments": ["HSC"],
@@ -268,12 +247,16 @@ async def test_query_maxrec_zero(
         "resource_identifier": "ivo://rubin//LSST.DP02",
         "access_url": "https://example.com/api/sia/dp02/query",
         "facility_name": "Rubin-LSST",
-        "bands": bands,
+        "bands": [
+            BandInfo(label="Rubin band u", low=330.0e-9, high=400.0e-9),
+            BandInfo(label="Rubin band g", low=402.0e-9, high=552.0e-9),
+            BandInfo(label="Rubin band r", low=552.0e-9, high=691.0e-9),
+            BandInfo(label="Rubin band i", low=691.0e-9, high=818.0e-9),
+            BandInfo(label="Rubin band z", low=818.0e-9, high=922.0e-9),
+            BandInfo(label="Rubin band y", low=970.0e-9, high=1060.0e-9),
+        ],
     }
-
-    template_rendered = templates_dir.get_template(
-        "self_description.xml"
-    ).render(context)
+    expected = templates.get_template("self-description.xml").render(context)
 
     assert response.status_code == 200
-    assert response.text.strip() == template_rendered.strip()
+    assert response.text.strip() == expected.strip()

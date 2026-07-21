@@ -22,12 +22,22 @@ from .support.butler import (
     patch_butler,
     patch_siav2_query,
 )
+from .support.data import SiaData
 
-BASE_PATH = Path(__file__).parent
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--update-test-data",
+        action="store_true",
+        default=False,
+        help="Overwrite expected test output with current results",
+    )
 
 
 @pytest_asyncio.fixture
-async def app(monkeypatch: pytest.MonkeyPatch) -> AsyncGenerator[FastAPI]:
+async def app(
+    data: SiaData, monkeypatch: pytest.MonkeyPatch
+) -> AsyncGenerator[FastAPI]:
     """Return a configured test application.
 
     Wraps the application in a lifespan manager so that startup and shutdown
@@ -53,11 +63,9 @@ async def app(monkeypatch: pytest.MonkeyPatch) -> AsyncGenerator[FastAPI]:
         form_data = await request.form()
         return {"method": "POST", "form_data": dict(form_data)}
 
-    data_config = BASE_PATH / "data" / "config" / "dp02.yaml"
-
     butler_collections = [
         ButlerDataCollection(
-            config=data_config,
+            config=data.path("config/dp02.yaml"),
             label="LSST.DP02",
             name="dp02",
             butler_type=ButlerType.REMOTE,
@@ -85,16 +93,14 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient]:
         yield client
 
 
-@pytest_asyncio.fixture
-async def expected_votable() -> str:
-    """Return the expected VOTable content as a string."""
-    xml_file_path = BASE_PATH / "templates" / "expected_votable.xml"
-    with xml_file_path.open("r", encoding="utf-8") as file:
-        return file.read()
+@pytest.fixture
+def data(request: pytest.FixtureRequest) -> SiaData:
+    update = request.config.getoption("--update-test-data")
+    return SiaData(Path(__file__).parent / "data", update_test_data=update)
 
 
 @pytest_asyncio.fixture
-async def test_config() -> Config:
+async def test_config(data: SiaData) -> Config:
     """Return a test configuration for a remote Butler.
 
     Returns
@@ -102,11 +108,9 @@ async def test_config() -> Config:
     Config
         The test configuration
     """
-    config = BASE_PATH / "data" / "config" / "dp02.yaml"
-
     butler_collections = [
         ButlerDataCollection(
-            config=config,
+            config=data.path("config/dp02.yaml"),
             label="LSST.DP02",
             name="dp02",
             repository=HttpUrl(

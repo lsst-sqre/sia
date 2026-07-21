@@ -1,13 +1,12 @@
 """Test the availability's endpoint.
-This test checks that the availability endpoint returns the
-expected XML response, read from the templates/availability.xml file.
+
+This test checks that the availability endpoint returns the expected XML
+response, read from the :file:`templates/availability.xml` file.
 """
 
-from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
@@ -15,23 +14,20 @@ from sia.config import Config, config
 from sia.services.availability import AvailabilityService
 from sia.services.data_collections import DataCollectionService
 
-router = APIRouter()
-"""FastAPI router for all external handlers."""
+from ...support.data import SiaData
 
 
 @pytest.mark.asyncio
 async def test_availability(
-    client: AsyncClient, mock_async_client: AsyncMock
+    data: SiaData, client: AsyncClient, mock_async_client: AsyncMock
 ) -> None:
     """Test the availability endpoint."""
-    templates_dir = Jinja2Templates(
-        directory=str(Path(__file__).parent.parent.parent / "templates")
-    )
+    templates = Jinja2Templates(data.path("templates"))
 
     r = await client.get(f"{config.path_prefix}/dp02/availability")
     assert r.status_code == 200
-    template_rendered = templates_dir.get_template("availability.xml").render()
-    assert r.text.strip() == template_rendered.strip()
+    expected = templates.get_template("availability.xml").render()
+    assert r.text.strip() == expected.strip()
 
 
 @pytest.mark.asyncio

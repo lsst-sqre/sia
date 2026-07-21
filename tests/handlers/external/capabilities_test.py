@@ -3,42 +3,31 @@ This test checks that the capabilities endpoint returns the
 expected XML response, read from the templates/capabilities.xml file.
 """
 
-from pathlib import Path
-
 import pytest
-from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
 from sia.config import config
 
-router = APIRouter()
-"""FastAPI router for all external handlers."""
-
-_TEMPLATE_DIR = str(
-    Path(__file__).resolve().parent.parent.parent / "templates"
-)
+from ...support.data import SiaData
 
 
 @pytest.mark.asyncio
-async def test_capabilities(client: AsyncClient) -> None:
+async def test_capabilities(data: SiaData, client: AsyncClient) -> None:
     """Test the capabilities endpoint."""
-    templates_dir = Jinja2Templates(_TEMPLATE_DIR)
+    templates = Jinja2Templates(data.path("templates"))
 
     context = {
-        "capabilities_url": f"https://example.com"
-        f"{config.path_prefix}/dp02/capabilities",
-        "availability_url": f"https://example.com"
-        f"{config.path_prefix}/dp02/availability",
+        "capabilities_url": (
+            f"https://example.com{config.path_prefix}/dp02/capabilities"
+        ),
+        "availability_url": (
+            f"https://example.com{config.path_prefix}/dp02/availability"
+        ),
         "query_url": f"https://example.com{config.path_prefix}/dp02/query",
     }
+    expected = templates.get_template("capabilities.xml").render(context)
 
     r = await client.get(f"{config.path_prefix}/dp02/capabilities")
     assert r.status_code == 200
-    template_rendered = templates_dir.get_template("capabilities.xml").render(
-        context
-    )
-
-    assert r.status_code == 200
-
-    assert r.text.strip() == template_rendered.strip()
+    assert r.text.strip() == expected.strip()
