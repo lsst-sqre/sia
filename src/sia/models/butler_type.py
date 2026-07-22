@@ -8,5 +8,4 @@ class ButlerType(str, CaseInsensitiveEnum):
 
     __slots__ = ()
 
-    DIRECT = "DIRECT"
     REMOTE = "REMOTE"

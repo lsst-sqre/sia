@@ -88,49 +88,6 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient]:
 
 
 @pytest_asyncio.fixture
-async def app_direct(
-    monkeypatch: pytest.MonkeyPatch,
-) -> AsyncGenerator[FastAPI]:
-    """Return a configured test application.
-
-    Wraps the application in a lifespan manager so that startup and shutdown
-    events are sent during test execution.
-    """
-    repo_path = BASE_PATH / "data" / "repo"
-    config_file = BASE_PATH / "data" / "config" / "ci_hsc_gen3.yaml"
-
-    butler_collections = [
-        ButlerDataCollection(
-            config=config_file,
-            repository=repo_path,
-            butler_type=ButlerType.DIRECT,
-            label="ci_hsc_gen3",
-            name="hsc",
-        ),
-    ]
-
-    monkeypatch.setattr(config, "path_prefix", "/api/sia")
-    monkeypatch.setattr(config, "butler_data_collections", butler_collections)
-
-    async with LifespanManager(main.app):
-        yield main.app
-
-
-@pytest_asyncio.fixture
-async def client_direct(app_direct: FastAPI) -> AsyncGenerator[AsyncClient]:
-    """Return an ``httpx.AsyncClient`` configured to talk to the test app."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app_direct),
-        base_url="https://example.com/",
-        headers={
-            "X-Auth-Request-Token": "sometoken",
-            "X-Auth-Request-User": "user",
-        },
-    ) as client:
-        yield client
-
-
-@pytest_asyncio.fixture
 async def expected_votable() -> str:
     """Return the expected VOTable content as a string."""
     xml_file_path = BASE_PATH / "templates" / "expected_votable.xml"
@@ -139,7 +96,7 @@ async def expected_votable() -> str:
 
 
 @pytest_asyncio.fixture
-async def test_config_remote() -> Config:
+async def test_config() -> Config:
     """Return a test configuration for a remote Butler.
 
     Returns
@@ -162,34 +119,6 @@ async def test_config_remote() -> Config:
     ]
     return Config(
         path_prefix="/api/sia",
-        butler_data_collections=butler_collections,
-    )
-
-
-@pytest_asyncio.fixture
-async def test_config_direct() -> Config:
-    """Return a test configuration for a direct Butler.
-
-    Returns
-    -------
-    Config
-        The test configuration
-    """
-    base_path = Path(__file__).parent
-    repo_path = base_path / "data" / "repo"
-    config_file = base_path / "data" / "config" / "ci_hsc_gen3.yaml"
-
-    butler_collections = [
-        ButlerDataCollection(
-            config=config_file,
-            repository=repo_path,
-            butler_type=ButlerType.DIRECT,
-            label="ci_hsc_gen3",
-            name="hsc",
-        ),
-    ]
-
-    return Config(
         butler_data_collections=butler_collections,
     )
 

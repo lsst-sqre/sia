@@ -70,7 +70,7 @@ class ButlerDataCollection:
         Field(
             title="Butler type",
             description="The Butler type for this data collection.",
-            examples=["REMOTE", "DIRECT"],
+            examples=["REMOTE"],
         ),
     ]
 

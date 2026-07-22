@@ -158,7 +158,7 @@ class ResponseHandlerService:
         collection: ButlerDataCollection,
         events: Events,
         user: str,
-        token: str | None,
+        token: str,
     ) -> Response:
         """Process the SIAv2 query and generate a Response.
 
@@ -179,7 +179,7 @@ class ResponseHandlerService:
         user
             The username.
         token
-            The token to use for the Butler (Optional).
+            The token to use for the Butler.
 
         Returns
         -------

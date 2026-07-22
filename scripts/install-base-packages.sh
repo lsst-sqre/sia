@@ -25,5 +25,4 @@ apt-get update
 apt-get -y upgrade
 
 # Install dependencies required at runtime.
-# libpq-dev: required by psycopg2 (not clear why this is needed?)
-apt-get -y install --no-install-recommends curl libpq-dev unzip zlib1g-dev
+apt-get -y install --no-install-recommends curl unzip

@@ -12,11 +12,7 @@ from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
 from sia.config import Config, config
-from sia.services.availability import (
-    AvailabilityService,
-    DirectButlerAvailabilityChecker,
-    RemoteButlerAvailabilityChecker,
-)
+from sia.services.availability import AvailabilityService
 from sia.services.data_collections import DataCollectionService
 
 router = APIRouter()
@@ -39,49 +35,37 @@ async def test_availability(
 
 
 @pytest.mark.asyncio
-async def test_direct_butler_availability(test_config_direct: Config) -> None:
-    """Test the availability of the direct Butler ."""
-    collection = DataCollectionService(
-        config=test_config_direct
-    ).get_data_collection_by_name(name="hsc")
-
-    checker = DirectButlerAvailabilityChecker()
-    availability = await checker.check_availability(collection=collection)
-    assert availability.available is True
-
-
-@pytest.mark.asyncio
 async def test_remote_butler_availability_success(
-    test_config_remote: Config,
+    test_config: Config,
 ) -> None:
     """Test the availability of the remote Butler ."""
     collection = DataCollectionService(
-        config=test_config_remote
+        config=test_config
     ).get_data_collection_by_name(name="dp02")
 
-    checker = RemoteButlerAvailabilityChecker()
+    checker = AvailabilityService(collection)
     with patch("sia.services.availability.AsyncClient") as mock_client:
         mock_response = AsyncMock()
         mock_response.status_code = 200
         mock_client.return_value.__aenter__.return_value.get.return_value = (
             mock_response
         )
-        availability = await checker.check_availability(collection=collection)
+        availability = await checker.get_availability()
     assert availability.available is True
 
 
 @pytest.mark.asyncio
 async def test_remote_butler_availability_failure(
-    test_config_remote: Config,
+    test_config: Config,
 ) -> None:
     """Test the availability of the remote Butler  when
     it is not available.
     """
     collection = DataCollectionService(
-        config=test_config_remote
+        config=test_config
     ).get_data_collection_by_name(name="dp02")
 
-    checker = RemoteButlerAvailabilityChecker()
+    checker = AvailabilityService(collection)
     with patch("sia.services.availability.AsyncClient") as mock_client:
         mock_response = AsyncMock()
         mock_response.status_code = 404
@@ -89,17 +73,5 @@ async def test_remote_butler_availability_failure(
             mock_response
         )
 
-        availability = await checker.check_availability(collection=collection)
+        availability = await checker.get_availability()
     assert availability.available is False
-
-
-@pytest.mark.asyncio
-async def test_availability_service(test_config_direct: Config) -> None:
-    """Test the availability service."""
-    collection = DataCollectionService(
-        config=test_config_direct
-    ).get_data_collection_by_name(name="hsc")
-
-    service = AvailabilityService(collection=collection)
-    availability = await service.get_availability()
-    assert availability.available is True

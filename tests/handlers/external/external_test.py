@@ -148,14 +148,17 @@ async def test_query_endpoint_mocker_get(
     ],
 )
 async def test_query_endpoint_get(
-    client_direct: AsyncClient,
+    *,
+    client: AsyncClient,
     query_params: str,
     expected_status: int,
     expected_content_type: str,
     expected_message: str | None,
+    mock_siav2_query: MockButlerQueryService,
+    mock_butler: MockButler,
 ) -> None:
-    response = await client_direct.get(
-        f"{config.path_prefix}/hsc/query?{query_params}"
+    response = await client.get(
+        f"{config.path_prefix}/dp02/query?{query_params}"
     )
 
     assert response.status_code == expected_status
@@ -210,16 +213,19 @@ async def test_query_endpoint_get(
     ],
 )
 async def test_query_endpoint_post(
-    client_direct: AsyncClient,
+    *,
+    client: AsyncClient,
     post_data: dict[str, Any],
     expected_status: int,
     expected_content_type: str,
     expected_message: str | None,
     expected_votable: str,
+    mock_siav2_query: MockButlerQueryService,
+    mock_butler: MockButler,
 ) -> None:
     """Test ``POST /api/sia/query`` with various parameters."""
-    response = await client_direct.post(
-        f"{config.path_prefix}/hsc/query", data=post_data
+    response = await client.post(
+        f"{config.path_prefix}/dp02/query", data=post_data
     )
     assert response.status_code == expected_status
 
@@ -234,37 +240,36 @@ async def test_query_endpoint_post(
 
 @pytest.mark.asyncio
 async def test_query_maxrec_zero(
-    client_direct: AsyncClient,
+    client: AsyncClient,
+    mock_siav2_query: MockButlerQueryService,
+    mock_butler: MockButler,
 ) -> None:
-    response = await client_direct.get(
-        f"{config.path_prefix}/hsc/query?MAXREC=0"
-    )
+    response = await client.get(f"{config.path_prefix}/dp02/query?MAXREC=0")
 
     templates_dir = Jinja2Templates(_TEMPLATE_DIR)
 
     bands = [
-        BandInfo(label="Rubin band HSC-G", low=406.0e-9, high=545.0e-9),
-        BandInfo(label="Rubin band HSC-R", low=543.0e-9, high=693.0e-9),
-        BandInfo(label="Rubin band HSC-R2", low=542.0e-9, high=693.0e-9),
-        BandInfo(label="Rubin band HSC-I", low=690.0e-9, high=842.0e-9),
-        BandInfo(label="Rubin band HSC-I2", low=692.0e-9, high=850.0e-9),
-        BandInfo(label="Rubin band HSC-Z", low=852.0e-9, high=928.0e-9),
-        BandInfo(label="Rubin band HSC-Y", low=937.0e-9, high=1015.0e-9),
-        BandInfo(label="Rubin band N921", low=914.7e-9, high=928.1e-9),
-        BandInfo(label="Rubin band g", low=406.0e-9, high=545.0e-9),
-        BandInfo(label="Rubin band r", low=542.0e-9, high=693.0e-9),
-        BandInfo(label="Rubin band i", low=692.0e-9, high=850.0e-9),
-        BandInfo(label="Rubin band z", low=852.0e-9, high=928.0e-9),
-        BandInfo(label="Rubin band y", low=937.0e-9, high=1015.0e-9),
+        BandInfo(label="Rubin band u", low=330.0e-9, high=400.0e-9),
+        BandInfo(label="Rubin band g", low=402.0e-9, high=552.0e-9),
+        BandInfo(label="Rubin band r", low=552.0e-9, high=691.0e-9),
+        BandInfo(label="Rubin band i", low=691.0e-9, high=818.0e-9),
+        BandInfo(label="Rubin band z", low=818.0e-9, high=922.0e-9),
+        BandInfo(label="Rubin band y", low=970.0e-9, high=1060.0e-9),
     ]
 
     context = {
         "instruments": ["HSC"],
-        "collections": ["LSST.CI"],
-        "dataproduct_subtypes": ["lsst.coadd", "lsst.raw", "lsst.calexp"],
-        "resource_identifier": "ivo://rubin//ci_hsc_gen3",
-        "access_url": "https://example.com/api/sia/hsc/query",
-        "facility_name": "Subaru",
+        "collections": ["LSST.DP02"],
+        "dataproduct_subtypes": [
+            "lsst.raw",
+            "lsst.calexp",
+            "lsst.deepCoadd_calexp",
+            "lsst.goodSeeingCoadd",
+            "lsst.goodSeeingDiff_differenceExp",
+        ],
+        "resource_identifier": "ivo://rubin//LSST.DP02",
+        "access_url": "https://example.com/api/sia/dp02/query",
+        "facility_name": "Rubin-LSST",
         "bands": bands,
     }
 
