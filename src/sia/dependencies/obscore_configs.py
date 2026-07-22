@@ -2,7 +2,7 @@
 
 from lsst.dax.obscore import ExporterConfig
 
-from ..config import Config
+from ..config import config
 
 
 class ObscoreConfigDependency:
@@ -13,7 +13,7 @@ class ObscoreConfigDependency:
     def __init__(self) -> None:
         self._config_mapping: dict[str, ExporterConfig] | None = None
 
-    async def initialize(self, config: Config) -> None:
+    async def initialize(self) -> None:
         """Initialize the dependency by processing the Butler Collections."""
         self._config_mapping = {}
         for collection in config.butler_data_collections:

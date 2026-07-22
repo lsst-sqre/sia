@@ -1,17 +1,11 @@
 """Data collection helper service."""
 
-from dataclasses import dataclass
-
-from ..config import Config
+from ..config import config
 from ..models.data_collections import ButlerDataCollection
 
 
-@dataclass
 class DataCollectionService:
     """Data Collection service class."""
-
-    config: Config
-    """The configuration object for the data collection."""
 
     def _get_data_collection(
         self,
@@ -46,7 +40,7 @@ class DataCollectionService:
         if not value:
             raise ValueError(f"{key.capitalize()} is required.")
 
-        for collection in self.config.butler_data_collections:
+        for collection in config.butler_data_collections:
             if getattr(collection, attribute).upper() == value.upper():
                 return collection
 
@@ -123,7 +117,7 @@ class DataCollectionService:
         """
         butler_repos = {}
 
-        for collection in self.config.butler_data_collections:
+        for collection in config.butler_data_collections:
             label = collection.label
             repository = collection.repository
 

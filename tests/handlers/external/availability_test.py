@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
-from sia.config import Config, config
+from sia.config import config
 from sia.services.availability import AvailabilityService
 from sia.services.data_collections import DataCollectionService
 
@@ -28,13 +28,11 @@ async def test_availability(
 
 
 @pytest.mark.asyncio
-async def test_remote_butler_availability_success(
-    test_config: Config,
-) -> None:
+async def test_remote_butler_availability_success() -> None:
     """Test the availability of the remote Butler ."""
-    collection = DataCollectionService(
-        config=test_config
-    ).get_data_collection_by_name(name="dp02")
+    collection = DataCollectionService().get_data_collection_by_name(
+        name="dp02"
+    )
 
     checker = AvailabilityService(collection)
     with patch("sia.services.availability.AsyncClient") as mock_client:
@@ -48,15 +46,13 @@ async def test_remote_butler_availability_success(
 
 
 @pytest.mark.asyncio
-async def test_remote_butler_availability_failure(
-    test_config: Config,
-) -> None:
+async def test_remote_butler_availability_failure() -> None:
     """Test the availability of the remote Butler  when
     it is not available.
     """
-    collection = DataCollectionService(
-        config=test_config
-    ).get_data_collection_by_name(name="dp02")
+    collection = DataCollectionService().get_data_collection_by_name(
+        name="dp02"
+    )
 
     checker = AvailabilityService(collection)
     with patch("sia.services.availability.AsyncClient") as mock_client:

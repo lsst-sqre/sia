@@ -34,10 +34,27 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
+@pytest.fixture(autouse=True)
+def _config(data: SiaData, monkeypatch: pytest.MonkeyPatch) -> Config:
+    """Override configuration to use remote Butler."""
+    butler_collections = [
+        ButlerDataCollection(
+            config=data.path("config/dp02.yaml"),
+            label="LSST.DP02",
+            name="dp02",
+            butler_type=ButlerType.REMOTE,
+            repository=HttpUrl(
+                "https://example.com/api/butler/repo/dp02/butler.yaml"
+            ),
+        ),
+    ]
+    monkeypatch.setattr(config, "path_prefix", "/api/sia")
+    monkeypatch.setattr(config, "butler_data_collections", butler_collections)
+    return config
+
+
 @pytest_asyncio.fixture
-async def app(
-    data: SiaData, monkeypatch: pytest.MonkeyPatch
-) -> AsyncGenerator[FastAPI]:
+async def app() -> AsyncGenerator[FastAPI]:
     """Return a configured test application.
 
     Wraps the application in a lifespan manager so that startup and shutdown
@@ -63,18 +80,6 @@ async def app(
         form_data = await request.form()
         return {"method": "POST", "form_data": dict(form_data)}
 
-    butler_collections = [
-        ButlerDataCollection(
-            config=data.path("config/dp02.yaml"),
-            label="LSST.DP02",
-            name="dp02",
-            butler_type=ButlerType.REMOTE,
-            repository=HttpUrl("https://example/repo/dp02/butler.yaml"),
-        ),
-    ]
-    monkeypatch.setattr(config, "path_prefix", "/api/sia")
-    monkeypatch.setattr(config, "butler_data_collections", butler_collections)
-
     async with LifespanManager(main.app):
         yield main.app
 
@@ -97,32 +102,6 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient]:
 def data(request: pytest.FixtureRequest) -> SiaData:
     update = request.config.getoption("--update-test-data")
     return SiaData(Path(__file__).parent / "data", update_test_data=update)
-
-
-@pytest_asyncio.fixture
-async def test_config(data: SiaData) -> Config:
-    """Return a test configuration for a remote Butler.
-
-    Returns
-    -------
-    Config
-        The test configuration
-    """
-    butler_collections = [
-        ButlerDataCollection(
-            config=data.path("config/dp02.yaml"),
-            label="LSST.DP02",
-            name="dp02",
-            repository=HttpUrl(
-                "https://example.com/api/butler/repo/dp02/butler.yaml"
-            ),
-            butler_type=ButlerType.REMOTE,
-        ),
-    ]
-    return Config(
-        path_prefix="/api/sia",
-        butler_data_collections=butler_collections,
-    )
 
 
 @pytest.fixture
