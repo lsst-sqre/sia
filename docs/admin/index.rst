@@ -33,11 +33,6 @@ butlerDataCollections
 
     Example: ``"REMOTE"``
 
-**repository** (required)
-    A path (HTTP or File Path) to the Butler repository.
-
-    Example: ``"https://data-dev.lsst.cloud/api/butler/configs/dp02.yaml"``
-
 **datalink_url** (optional)
     An HTTP path to overwrite the Datalink endpoint in the obscore repository with.
 

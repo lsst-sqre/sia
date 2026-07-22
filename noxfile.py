@@ -19,8 +19,7 @@ nox.options.reuse_existing_virtualenvs = True
 _COLLECTIONS = (
     '[{"config":"https://example.com/dp02.yaml", '
     '"datalink_url":"https://example.com/links?ID=butler%3A//dp02", '
-    '"name":"dp02", "label":"LSST.DP02", "butler_type":"REMOTE", '
-    '"repository":"https://example.com/repo/dp02/butler.yaml"}]'
+    '"name":"dp02", "butler_type":"REMOTE"}]'
 )
 
 
@@ -102,6 +101,7 @@ def test(session: nox.Session) -> None:
         "--cov-report=",
         *session.posargs,
         env={
+            "REPERTOIRE_BASE_URL": "https://example.com/repertoire",
             "SIA_BUTLER_DATA_COLLECTIONS": _COLLECTIONS,
             "SIA_ENVIRONMENT_NAME": "testing",
             "METRICS_APPLICATION": "sia",

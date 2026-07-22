@@ -133,7 +133,7 @@ class ResponseHandlerService:
                 # This may need to be updated if we decide to change the
                 # dax_obscore config to hold multiple collections
                 "resource_identifier": f"{BASE_RESOURCE_IDENTIFIER}/"
-                f"{butler_collection.label}",
+                f"{obscore_config.obs_collection}",
                 "access_url": request.url_for(
                     "query", collection_name=butler_collection.name
                 ),
@@ -208,7 +208,7 @@ class ResponseHandlerService:
                 token=token,
             ),
         )
-        obscore_config = factory.create_obscore_config(collection.label)
+        obscore_config = factory.create_obscore_config(collection.name)
 
         if params.maxrec == 0:
             logger.info(

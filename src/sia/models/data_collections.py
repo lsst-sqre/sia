@@ -28,30 +28,6 @@ class ButlerDataCollection:
         ),
     ]
 
-    repository: Annotated[
-        HttpUrl | Path,
-        Field(
-            title="Butler repository",
-            description="Butler repository path or URL",
-            examples=[
-                "https://example.com/butler-repo/path/to/local/repository",
-                "/path/to/local/butler/repository",
-            ],
-        ),
-    ]
-
-    label: Annotated[
-        str,
-        Field(
-            title="Butler label",
-            description=(
-                "The label for this Butler collection. Used to identify the"
-                " collection in the case where we are using a remote Butler."
-            ),
-            examples=["LSST.DP02"],
-        ),
-    ]
-
     name: Annotated[
         str,
         Field(
@@ -86,17 +62,6 @@ class ButlerDataCollection:
             ),
         ),
     ] = None
-
-    @property
-    def identifier(self) -> str:
-        """Get the identifier for the data collection.
-
-        Returns
-        -------
-        str
-            The identifier.
-        """
-        return f"{self.label}:{self.repository}"
 
     def get_exporter_config(self) -> ExporterConfig:
         """Get the exporter configuration.

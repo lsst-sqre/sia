@@ -6,10 +6,11 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 import pytest_asyncio
+import respx
 from asgi_lifespan import LifespanManager
 from fastapi import FastAPI, Request
 from httpx import ASGITransport, AsyncClient
-from pydantic import HttpUrl
+from rubin.repertoire import Discovery, register_mock_discovery
 
 from sia import main
 from sia.config import Config, config
@@ -40,12 +41,8 @@ def _config(data: SiaData, monkeypatch: pytest.MonkeyPatch) -> Config:
     butler_collections = [
         ButlerDataCollection(
             config=data.path("config/dp02.yaml"),
-            label="LSST.DP02",
             name="dp02",
             butler_type=ButlerType.REMOTE,
-            repository=HttpUrl(
-                "https://example.com/api/butler/repo/dp02/butler.yaml"
-            ),
         ),
     ]
     monkeypatch.setattr(config, "path_prefix", "/api/sia")
@@ -131,6 +128,15 @@ def mock_async_client(
     )
 
     return mock_client, mock_response
+
+
+@pytest.fixture(autouse=True)
+def mock_discovery(
+    data: SiaData, respx_mock: respx.Router, monkeypatch: pytest.MonkeyPatch
+) -> Discovery:
+    monkeypatch.setenv("REPERTOIRE_BASE_URL", "https://example.com/repertoire")
+    path = data.path("discovery.json")
+    return register_mock_discovery(respx_mock, path)
 
 
 @pytest.fixture

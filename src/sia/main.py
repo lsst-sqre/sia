@@ -28,9 +28,6 @@ from safir.slack.webhook import SlackRouteErrorHandler
 from . import __version__
 from .config import config
 from .dependencies.context import context_dependency
-from .dependencies.labeled_butler_factory import (
-    labeled_butler_factory_dependency,
-)
 from .dependencies.obscore_configs import obscore_config_dependency
 from .errors import votable_exception_handler
 from .exceptions import VOTableError
@@ -49,7 +46,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Set up and tear down the application."""
     logger = structlog.get_logger("sia")
     logger.debug("SIA has started up.")
-    await labeled_butler_factory_dependency.initialize()
     await obscore_config_dependency.initialize()
     event_manager = config.metrics.make_manager()
     await event_manager.initialize()
@@ -57,7 +53,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
     yield
 
-    await labeled_butler_factory_dependency.aclose()
     await obscore_config_dependency.aclose()
     await event_manager.aclose()
     await http_client_dependency.aclose()
