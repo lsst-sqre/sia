@@ -16,11 +16,7 @@ nox.options.default_venv_backend = "uv"
 nox.options.reuse_existing_virtualenvs = True
 
 # Value of SIA_BUTLER_DATA_COLLECTIONS for testing.
-_COLLECTIONS = (
-    '[{"config":"https://example.com/dp02.yaml", '
-    '"datalink_url":"https://example.com/links?ID=butler%3A//dp02", '
-    '"name":"dp02"}]'
-)
+_COLLECTIONS = '[{"config":"https://example.com/dp02.yaml", "name":"dp02"}]'
 
 
 @session(name="coverage-report", requires=["test"], uv_groups=["dev"])
