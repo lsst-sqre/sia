@@ -1,7 +1,5 @@
 """Component factory and process-wide status for sia."""
 
-from __future__ import annotations
-
 import structlog
 from lsst.daf.butler import Butler, LabeledButlerFactory
 from lsst.dax.obscore import ExporterConfig

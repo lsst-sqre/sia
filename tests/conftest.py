@@ -1,7 +1,5 @@
 """Test fixtures for sia tests."""
 
-from __future__ import annotations
-
 from collections.abc import AsyncGenerator, Iterator
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
