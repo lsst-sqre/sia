@@ -16,6 +16,7 @@ import structlog
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
+from rubin.repertoire import discovery_dependency
 from safir.dependencies.http_client import http_client_dependency
 from safir.logging import configure_logging, configure_uvicorn_logging
 from safir.middleware.ivoa import (
@@ -28,7 +29,6 @@ from safir.slack.webhook import SlackRouteErrorHandler
 from . import __version__
 from .config import config
 from .dependencies.context import context_dependency
-from .dependencies.obscore_configs import obscore_config_dependency
 from .errors import votable_exception_handler
 from .exceptions import VOTableError
 from .handlers.external import external_router
@@ -46,14 +46,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Set up and tear down the application."""
     logger = structlog.get_logger("sia")
     logger.debug("SIA has started up.")
-    await obscore_config_dependency.initialize()
+    discovery_dependency.initialize(logger)
     event_manager = config.metrics.make_manager()
     await event_manager.initialize()
     await context_dependency.initialize(event_manager=event_manager)
 
     yield
 
-    await obscore_config_dependency.aclose()
     await event_manager.aclose()
     await http_client_dependency.aclose()
     logger.debug("SIA shut down complete.")

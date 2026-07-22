@@ -159,6 +159,7 @@ class ResponseHandlerService:
         events: Events,
         user: str,
         token: str,
+        obscore_config: ExporterConfig,
     ) -> Response:
         """Process the SIAv2 query and generate a Response.
 
@@ -180,6 +181,8 @@ class ResponseHandlerService:
             The username.
         token
             The token to use for the Butler.
+        obscore_config
+            The ObsCore configuration.
 
         Returns
         -------
@@ -208,7 +211,6 @@ class ResponseHandlerService:
                 token=token,
             ),
         )
-        obscore_config = factory.create_obscore_config(collection.name)
 
         if params.maxrec == 0:
             logger.info(
