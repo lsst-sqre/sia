@@ -7,9 +7,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from safir.logging import LogLevel, Profile
 from safir.metrics import MetricsConfiguration, metrics_configuration_factory
 
-from .exceptions import FatalFaultError
-from .models.data_collections import ButlerDataCollection
-
 __all__ = ["Config", "config"]
 
 
@@ -18,9 +15,15 @@ class Config(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="SIA_", case_sensitive=False)
 
-    butler_data_collections: Annotated[
-        list[ButlerDataCollection],
-        Field(title="Data collections"),
+    datasets: Annotated[
+        list[str],
+        Field(
+            title="Supported datasets",
+            description=(
+                "Only queries against the listed datasets are supported"
+            ),
+            min_length=1,
+        ),
     ]
 
     log_level: LogLevel = Field(
@@ -39,6 +42,14 @@ class Config(BaseSettings):
 
     name: str = Field("sia", title="Name of application")
 
+    obscore_config: Annotated[
+        dict[str, HttpUrl],
+        Field(
+            title="ObsCore confiugration",
+            description="Mapping of dataset label to ObsCore configuration",
+        ),
+    ]
+
     path_prefix: str = Field("/api/sia", title="URL prefix for application")
 
     slack_webhook: Annotated[
@@ -46,14 +57,12 @@ class Config(BaseSettings):
     ] = None
 
     @model_validator(mode="after")
-    def _validate_butler_data_collections(self) -> Self:
-        """Validate the Butler data collections."""
-        if len(self.butler_data_collections) == 0:
-            raise FatalFaultError(
-                detail="No Data Collections configured. Please configure "
-                "at least one Data collection."
-            )
-
+    def _validate_obscore_config(self) -> Self:
+        """Every dataset must have an ObsCore configuration."""
+        for dataset in self.datasets:
+            if not self.obscore_config.get(dataset):
+                msg = f"No ObsCore configuration for dataset {dataset}"
+                raise ValueError(msg)
         return self
 
 

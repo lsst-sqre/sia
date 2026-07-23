@@ -14,7 +14,6 @@ from rubin.repertoire import Discovery, register_mock_discovery
 
 from sia import main
 from sia.config import Config, config
-from sia.models.data_collections import ButlerDataCollection
 
 from .support.butler import (
     MockButler,
@@ -36,14 +35,9 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 @pytest.fixture(autouse=True)
 def _config(data: SiaData, monkeypatch: pytest.MonkeyPatch) -> Config:
-    """Override configuration to use remote Butler."""
-    butler_collections = [
-        ButlerDataCollection(
-            config=data.path("config/dp02.yaml"), name="dp02"
-        ),
-    ]
-    monkeypatch.setattr(config, "path_prefix", "/api/sia")
-    monkeypatch.setattr(config, "butler_data_collections", butler_collections)
+    """Override ObsCore configuration to use test data."""
+    obscore_config = {"dp02": str(data.path("config/dp02.yaml"))}
+    monkeypatch.setattr(config, "obscore_config", obscore_config)
     return config
 
 

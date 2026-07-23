@@ -72,7 +72,7 @@ async def votable_exception_handler(
         },
         media_type="application/xml",
     )
-    response.status_code = 400
+    response.status_code = exc.status_code
     return response
 
 

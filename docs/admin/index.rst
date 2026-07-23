@@ -2,39 +2,25 @@
 Administration
 ##############
 
-
 Helm configuration
 ==================
 
-The SIAv2 service is deployed via Phalanx, which requires a ``values-{env}.yaml`` configuration file to be provided. Most of the configuration is fairly standard and common with other applications in Phalanx and has defaults in the ``values.yaml``.
+The SIAv2 service is deployed via Phalanx, which requires a :file:`values-{env}.yaml` configuration file to be provided.
+Most of the configuration is fairly standard and common with other applications in Phalanx and has defaults in the :file:`values.yaml`.
 
-The main configuration that needs to be provided is the list of Butler Repositories (``butlerDataCollections``), and all the relevant attributes for each repository which are listed below:
+The two main settings that need to be configured for a given environment are:
 
-butlerDataCollections
----------------------
+**config.datasets** (required)
+    A list of Repertoire dataset names (``dp1``, ``dp2``, etc.) that this instance of SIA should serve.
+    Each of these datasets must have a Butler configuration in service discovery and must have an entry in **obscoreConfig** (see below).
 
-**config** (required)
-    A path (HTTP or File Path) to the Obscore configuration.
+**config.obscoreConfig** (required)
+    A mapping of dataset names to the corresponding ObsCore exporter configuration.
+    For example, ``dp02`` might map to ``https://raw.githubusercontent.com/lsst-dm/dax_obscore/refs/heads/main/configs/dp02.yaml``.
 
-    Example: ``"https://raw.githubusercontent.com/lsst-dm/dax_obscore/refs/heads/main/configs/dp02.yaml"``
-
-**label** (required)
-    The label for the Butler repository.
-
-    Example: ``"dp02"``
-
-**name** (required)
-    Name of the Butler repository. This is used by the app to configure the path to the SIAv2 service for this repository.
-    For example ``"dp02"`` will result in ``"https://data-dev.lsst.cloud/api/sia/dp02"``
-
-**butler_type** (required)
-    The type of Butler repository.
-    Only ``REMOTE`` is supported.
-
-    Example: ``"REMOTE"``
 
 Ingresses
-==================
+=========
 
 **Anonymous Paths**
 
@@ -51,7 +37,6 @@ By default SIA sets up an anonymous ingress for these paths:
 All other paths of the app, including /query are authenticated:
 
 - path: /
-
 
 
 Vault secrets
@@ -77,10 +62,12 @@ This will be the main FastAPI web-service running the SIA application.
 Any relevant logs during operations will be in the logs of this pod.
 
 
-Use with a Remote Butler
-==========================
+Authentication
+==============
 
-To connect the SIA app with a Remote Butler repository, the values in the configuration need to be specified as described, ensuring their ``butler_type`` is set to **REMOTE**. Then when a user wishes to run a query they need to provide a Bearer token as with several other apps in Phalanx (see TAP for example). This is possible with most python clients (pyvo/astropy) and is handled automatically for the user when accessing via a browser having previously logged in.
+When a user wishes to run a query, they need to provide a Bearer token as with several other apps in Phalanx (see TAP for example).
+This is possible with most Python clients (pyVO and astropy, for example) and is handled automatically for the user when accessing via a browser having previously logged in.
+
 If a token is not provided the app will reject the request with an authorization error.
 
 

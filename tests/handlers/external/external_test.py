@@ -235,3 +235,16 @@ async def test_query_maxrec_zero(
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/x-votable+xml"
     data.assert_text_matches(r.text, "responses/self-description.xml")
+
+
+@pytest.mark.asyncio
+async def test_query_unknown(client: AsyncClient) -> None:
+    r = await client.get(
+        f"{config.path_prefix}/dp1/query", params={"MAXREC": 0}
+    )
+    assert r.status_code == 404
+
+    r = await client.post(
+        f"{config.path_prefix}/dp1/query", data={"MAXREC": 0}
+    )
+    assert r.status_code == 404

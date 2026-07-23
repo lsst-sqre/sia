@@ -27,7 +27,6 @@ from ..models.data_collections import ButlerDataCollection
 from ..models.index import Index
 from ..models.sia_query_params import SIAQueryParams
 from ..services.availability import AvailabilityService
-from ..services.data_collections import DataCollectionService
 from ..services.response_handler import ResponseHandlerService
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -95,17 +94,12 @@ async def get_index(
     },
     summary="IVOA service availability",
 )
-async def get_availability(collection_name: str) -> Response:
-    # Get the butler data collection
-    collection = DataCollectionService().get_data_collection_by_name(
-        name=collection_name
-    )
-
-    # Check if it is available
+async def get_availability(
+    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
+) -> Response:
     availability = await AvailabilityService(
         collection=collection
     ).get_availability()
-
     xml = availability.to_xml(skip_empty=True)
     return Response(content=xml, media_type="application/xml")
 
@@ -137,7 +131,7 @@ async def get_availability(collection_name: str) -> Response:
     summary="IVOA service capabilities",
 )
 async def get_capabilities(
-    collection_name: str,
+    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
     request: Request,
 ) -> Response:
     return _TEMPLATES.TemplateResponse(
@@ -146,13 +140,13 @@ async def get_capabilities(
         {
             "request": request,
             "availability_url": request.url_for(
-                "get_availability", collection_name=collection_name
+                "get_availability", collection_name=collection.name
             ),
             "capabilities_url": request.url_for(
-                "get_capabilities", collection_name=collection_name
+                "get_capabilities", collection_name=collection.name
             ),
             "query_url": request.url_for(
-                "query", collection_name=collection_name
+                "query", collection_name=collection.name
             ),
         },
         media_type="application/xml",
