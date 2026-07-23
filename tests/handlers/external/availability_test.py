@@ -1,13 +1,12 @@
-"""Test the availability's endpoint.
+"""Test the availability endpoint.
 
 This test checks that the availability endpoint returns the expected XML
-response, read from the :file:`templates/availability.xml` file.
+response.
 """
 
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
 from sia.config import Config, config
@@ -22,12 +21,10 @@ async def test_availability(
     data: SiaData, client: AsyncClient, mock_async_client: AsyncMock
 ) -> None:
     """Test the availability endpoint."""
-    templates = Jinja2Templates(data.path("templates"))
-
     r = await client.get(f"{config.path_prefix}/dp02/availability")
     assert r.status_code == 200
-    expected = templates.get_template("availability.xml").render()
-    assert r.text.strip() == expected.strip()
+    assert r.headers["Content-Type"] == "application/xml"
+    data.assert_text_matches(r.text, "responses/availability.xml")
 
 
 @pytest.mark.asyncio

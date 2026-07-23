@@ -8,9 +8,12 @@
     <GROUP name="inputParams">
       <PARAM name="BAND" datatype="float" arraysize="2*" xtype="interval">
         <DESCRIPTION>Wavelength/filter band selection</DESCRIPTION>
-        {%- for band in bands %}
-        <OPTION name="{{ band.label }}" value="{{ band.formatted_midpoint }}"/>
-        {%- endfor %}
+        <OPTION name="Rubin band u" value="365.0e-9"/>
+        <OPTION name="Rubin band g" value="477.0e-9"/>
+        <OPTION name="Rubin band r" value="621.5e-9"/>
+        <OPTION name="Rubin band i" value="754.5e-9"/>
+        <OPTION name="Rubin band z" value="870.0e-9"/>
+        <OPTION name="Rubin band y" value="1015.0e-9"/>
       </PARAM>
       <PARAM name="CALIB" datatype="int" arraysize="*">
         <DESCRIPTION>Calibration level</DESCRIPTION>
@@ -23,9 +26,7 @@
       <PARAM name="COLLECTION" datatype="char" arraysize="*">
         <DESCRIPTION>Collection name</DESCRIPTION>
         <VALUES type="actual">
-          {%- for collection in collections %}
-          <OPTION value="{{ collection }}"/>
-          {%- endfor %}
+          <OPTION value="LSST.DP02"/>
         </VALUES>
       </PARAM>
       <PARAM name="DPTYPE" datatype="char" arraysize="*">
@@ -38,9 +39,11 @@
       <PARAM name="DPSUBTYPE" datatype="char" arraysize="*">
         <DESCRIPTION>Value of dataproduct subtype</DESCRIPTION>
         <VALUES type="actual">
-          {%- for dpsubtype in dataproduct_subtypes|sort  %}
-          <OPTION value="{{ dpsubtype }}"/>
-          {%- endfor %}
+          <OPTION value="lsst.calexp"/>
+          <OPTION value="lsst.deepCoadd_calexp"/>
+          <OPTION value="lsst.goodSeeingCoadd"/>
+          <OPTION value="lsst.goodSeeingDiff_differenceExp"/>
+          <OPTION value="lsst.raw"/>
         </VALUES>
       </PARAM>
       <PARAM name="EXPTIME" datatype="double" arraysize="2" unit="sec" xtype="interval">
@@ -49,7 +52,7 @@
       <PARAM name="FACILITY" datatype="char" arraysize="*">
         <DESCRIPTION>Facility (telescope) name</DESCRIPTION>
         <VALUES type="actual">
-          <OPTION value="{{ facility_name }}"/>
+          <OPTION value="Rubin-LSST"/>
         </VALUES>
       </PARAM>
       <PARAM name="FORMAT" datatype="char" arraysize="*">
@@ -68,9 +71,7 @@
       <PARAM name="INSTRUMENT" datatype="char" arraysize="*">
         <DESCRIPTION>Instrument name</DESCRIPTION>
         <VALUES type="actual">
-          {%- for instrument in instruments %}
-          <OPTION value="{{ instrument }}"/>
-          {%- endfor %}
+          <OPTION value="HSC"/>
         </VALUES>
       </PARAM>
       <PARAM name="POL" datatype="char" arraysize="*">
@@ -109,9 +110,9 @@
     </GROUP>
     <PARAM name="standardID" datatype="char" arraysize="*" value="ivo://ivoa.net/std/SIA#query-2.0"/>
     <PARAM name="accessURL" datatype="char" arraysize="*"
-           value="{{ access_url }}"/>
+           value="https://example.com/api/sia/dp02/query"/>
     <PARAM name="resourceIdentifier" datatype="char" arraysize="*"
-           value="{{ resource_identifier }}"/>
+           value="ivo://rubin//LSST.DP02"/>
   </RESOURCE>
   <RESOURCE type="results">
     <INFO name="QUERY_STATUS" value="OVERFLOW"/>
