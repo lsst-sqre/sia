@@ -65,7 +65,7 @@ async def votable_exception_handler(
 
     response = _TEMPLATES.TemplateResponse(
         request,
-        "votable_error.xml",
+        "votable-error.xml",
         {
             "request": request,
             "error_message": str(exc),

@@ -122,7 +122,7 @@ class ResponseHandlerService:
 
         return _TEMPLATES.TemplateResponse(
             request,
-            "self_description.xml",
+            "self-description.xml",
             {
                 "request": request,
                 "instruments": [
