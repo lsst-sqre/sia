@@ -10,12 +10,16 @@ from dataclasses import dataclass
 from typing import Annotated, Any
 
 from fastapi import Depends, Request
-from safir.dependencies.logger import logger_dependency
+from lsst.daf.butler import Butler
+from lsst.dax.obscore import ExporterConfig
+from safir.dependencies.gafaelfawr import auth_logger_dependency
 from safir.metrics import EventManager
 from structlog.stdlib import BoundLogger
 
 from ..events import Events
 from ..factory import Factory
+from .butler import butler_dependency
+from .obscore_configs import obscore_config_dependency
 
 __all__ = [
     "ContextDependency",
@@ -37,14 +41,14 @@ class RequestContext:
     request: Request
     """The incoming request."""
 
-    logger: BoundLogger
-    """The request logger, rebound with discovered context."""
-
     factory: Factory
     """The component factory."""
 
     events: Events
     """Events publisher."""
+
+    logger: BoundLogger
+    """The request logger, rebound with discovered context."""
 
     def rebind_logger(self, **values: Any) -> None:
         """Add the given values to the logging context.
@@ -74,17 +78,21 @@ class ContextDependency:
         self,
         *,
         request: Request,
-        logger: Annotated[BoundLogger, Depends(logger_dependency)],
+        butler: Annotated[Butler, Depends(butler_dependency)],
+        obscore_config: Annotated[
+            ExporterConfig, Depends(obscore_config_dependency)
+        ],
+        logger: Annotated[BoundLogger, Depends(auth_logger_dependency)],
     ) -> RequestContext:
         """Create a per-request context and return it."""
         if not self._events:
             raise RuntimeError("ContextDependency not initialized")
-        factory = Factory(logger=logger)
+        factory = Factory(butler, obscore_config, logger)
         return RequestContext(
             request=request,
-            logger=logger,
             factory=factory,
             events=self._events,
+            logger=logger,
         )
 
     async def initialize(self, event_manager: EventManager) -> None:

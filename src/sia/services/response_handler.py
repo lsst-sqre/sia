@@ -4,21 +4,17 @@ import asyncio
 import time
 import uuid
 from collections.abc import Callable
-from pathlib import Path
 
 import astropy
 import structlog
 from fastapi import Request, Response
-from fastapi.templating import Jinja2Templates
 from lsst.daf.butler import Butler
 from lsst.dax.obscore import ExporterConfig
 from safir.sentry import duration
 
-from ..constants import BASE_RESOURCE_IDENTIFIER
 from ..constants import RESULT_NAME as RESULT
 from ..events import Events, SIAQueryFailed, SIAQuerySucceeded
-from ..models.data_collections import ButlerDataCollection
-from ..models.sia_query_params import BandInfo, SIAQueryParams
+from ..models.sia_query_params import SIAQueryParams
 from ..sentry import capturing_start_span
 from ..services.votable import VotableConverterService
 
@@ -26,126 +22,9 @@ logger = structlog.get_logger(__name__)
 
 SIAv2QueryType = Callable[..., astropy.io.votable.tree.VOTableFile]
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-_TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
-
 
 class ResponseHandlerService:
     """Service for handling the SIAv2 query response."""
-
-    @staticmethod
-    def _generate_band_info(
-        spectral_ranges: dict[str, tuple[float | None, float | None]],
-    ) -> list[BandInfo]:
-        """Generate band information from spectral ranges dictionary.
-
-        Parameters
-        ----------
-        spectral_ranges
-            The spectral ranges dictionary.
-
-        Returns
-        -------
-        list[BandInfo]
-            The list of BandInfo objects.
-        """
-        bands = []
-        for band_name, (low, high) in spectral_ranges.items():
-            if low is not None and high is not None:
-                # The Rubin label is hardcoded here, but it could be
-                # parameterized if needed in the future.
-                bands.append(
-                    BandInfo(
-                        label=f"Rubin band {band_name}", low=low, high=high
-                    )
-                )
-        return bands
-
-    @staticmethod
-    def _get_dataproduct_subtypes(
-        obscore_config: ExporterConfig,
-    ) -> list[str]:
-        """Extract unique dataproduct subtypes from dataset types.
-
-        Parameters
-        ----------
-        obscore_config
-            The ExporterConfig object containing dataset types.
-
-        Returns
-        -------
-        list[str]
-            The list of unique dataproduct subtypes.
-        """
-        subtypes = {
-            config.dataproduct_subtype
-            for config in obscore_config.dataset_types.values()
-            if config.dataproduct_subtype is not None
-        }
-        return list(subtypes)
-
-    @staticmethod
-    async def self_description_response(
-        request: Request,
-        butler: Butler,
-        obscore_config: ExporterConfig,
-        butler_collection: ButlerDataCollection,
-    ) -> Response:
-        """Return a self-description response for the SIAv2 service.
-        This should provide metadata about the expected parameters and return
-        values for the service.
-
-        Parameters
-        ----------
-        request
-            The request object.
-        butler
-            The Butler instance.
-        obscore_config
-            The ObsCore configuration.
-        butler_collection
-            The Butler data collection.
-
-        Returns
-        -------
-        Response
-            The response containing the self-description.
-        """
-        bands = ResponseHandlerService._generate_band_info(
-            obscore_config.spectral_ranges
-        )
-
-        dataproduct_subtypes = (
-            ResponseHandlerService._get_dataproduct_subtypes(obscore_config)
-        )
-
-        return _TEMPLATES.TemplateResponse(
-            request,
-            "self-description.xml",
-            {
-                "request": request,
-                "instruments": [
-                    rec.name
-                    for rec in butler.query_dimension_records("instrument")
-                ],
-                "collections": [obscore_config.obs_collection],
-                # This may need to be updated if we decide to change the
-                # dax_obscore config to hold multiple collections
-                "resource_identifier": f"{BASE_RESOURCE_IDENTIFIER}/"
-                f"{obscore_config.obs_collection}",
-                "access_url": request.url_for(
-                    "query", collection_name=butler_collection.name
-                ),
-                "facility_name": obscore_config.facility_name.strip(),
-                "bands": bands,
-                "dataproduct_subtypes": dataproduct_subtypes,
-            },
-            headers={
-                "content-disposition": f"attachment; filename={RESULT}.xml",
-                "Content-Type": "application/x-votable+xml",
-            },
-            media_type="application/x-votable+xml",
-        )
 
     @staticmethod
     async def process_query(
@@ -154,7 +33,6 @@ class ResponseHandlerService:
         raw_params: SIAQueryParams,
         sia_query: SIAv2QueryType,
         request: Request,
-        collection: ButlerDataCollection,
         events: Events,
         user: str,
         obscore_config: ExporterConfig,
@@ -171,8 +49,6 @@ class ResponseHandlerService:
             The SIA query method to use
         request
             The request object.
-        collection
-            The Butler data collection
         events
             Object with attributes for all metrics event publishers.
         user
@@ -198,19 +74,6 @@ class ResponseHandlerService:
         )
 
         loop = asyncio.get_running_loop()
-
-        if params.maxrec == 0:
-            logger.info(
-                "Returning self-description response (maxrec=0)",
-                user=user,
-                query_id=query_id,
-            )
-            return await ResponseHandlerService.self_description_response(
-                request=request,
-                butler=butler,
-                obscore_config=obscore_config,
-                butler_collection=collection,
-            )
 
         with capturing_start_span("sia_query") as span:
             span.set_data("query", params)
