@@ -1,14 +1,30 @@
-"""Dependency class for creating a LabeledButlerFactory singleton."""
+"""Dependency class for creating Butler instances."""
 
-from lsst.daf.butler import LabeledButlerFactory
+from typing import Annotated
+
+from fastapi import Depends
+from lsst.daf.butler import Butler, LabeledButlerFactory
 from rubin.repertoire import DiscoveryClient
+from safir.dependencies.gafaelfawr import auth_delegated_token_dependency
 
 from ..config import config
 from ..exceptions import FatalFaultError
+from ..models.data_collections import ButlerDataCollection
+from .data_collections import validate_collection
+
+__all__ = [
+    "ButlerFactoryDependency",
+    "butler_dependency",
+    "butler_factory_dependency",
+]
 
 
-class LabeledButlerFactoryDependency:
-    """Provides a remote butler factory as a dependency."""
+class ButlerFactoryDependency:
+    """Provides a labeled Butler factory as a dependency.
+
+    This factory will be configured with the labels that SIA knows about. It
+    is normally used via `butler_factory_dependency`.
+    """
 
     def __init__(self) -> None:
         self._discovery = DiscoveryClient()
@@ -57,5 +73,22 @@ class LabeledButlerFactoryDependency:
         return self._butler_factory
 
 
-labeled_butler_factory_dependency = LabeledButlerFactoryDependency()
-"""The dependency that will return the LabeledButlerFactoryDependency."""
+butler_factory_dependency = ButlerFactoryDependency()
+"""Dependency that returns a Butler factory that knows about dataset labels."""
+
+
+def butler_dependency(
+    butler_factory: Annotated[
+        LabeledButlerFactory, Depends(butler_factory_dependency)
+    ],
+    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
+    token: Annotated[str, Depends(auth_delegated_token_dependency)],
+) -> Butler:
+    """Construct a Butler for a given collection and user token.
+
+    This function should be sync rather than async in case constructing a
+    Butler requires network I/O. FastAPI will then run it in a thread pool
+    rather than blocking the main process.
+    """
+    name = collection.name
+    return butler_factory.create_butler(label=name, access_token=token)
