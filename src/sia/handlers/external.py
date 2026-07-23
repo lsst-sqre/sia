@@ -5,8 +5,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
-from lsst.daf.butler import Butler
-from lsst.dax.obscore import ExporterConfig
 from lsst.dax.obscore.siav2 import siav2_query
 from safir.dependencies.gafaelfawr import auth_dependency
 from safir.dependencies.logger import logger_dependency
@@ -18,16 +16,13 @@ from vo_models.vosi.capabilities.models import VOSICapabilities
 
 from ..config import config
 from ..constants import RESULT_NAME
-from ..dependencies.butler import butler_dependency
 from ..dependencies.context import RequestContext, context_dependency
 from ..dependencies.data_collections import validate_collection
-from ..dependencies.obscore_configs import obscore_config_dependency
 from ..dependencies.query_params import get_sia_params_dependency
 from ..models.data_collections import ButlerDataCollection
 from ..models.index import Index
 from ..models.sia_query_params import SIAQueryParams
 from ..services.availability import AvailabilityService
-from ..services.response_handler import ResponseHandlerService
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 _TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
@@ -180,15 +175,15 @@ async def get_capabilities(
 async def query(
     *,
     collection_name: str,
-    context: Annotated[RequestContext, Depends(context_dependency)],
-    butler: Annotated[Butler, Depends(butler_dependency)],
-    obscore_config: Annotated[
-        ExporterConfig, Depends(obscore_config_dependency)
-    ],
-    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
     params: Annotated[SIAQueryParams, Depends(get_sia_params_dependency)],
     user: Annotated[str, Depends(auth_dependency)],
+    context: Annotated[RequestContext, Depends(context_dependency)],
 ) -> Response:
+    headers = {
+        "Content-Disposition": f"attachment; filename={RESULT_NAME}.xml",
+        "Content-Type": "application/x-votable+xml",
+    }
+
     # If MAXREC is set to 0, this is a special case that should return a
     # self-description response instead of performing a query.
     if params.maxrec == 0:
@@ -196,27 +191,26 @@ async def query(
         description_service = context.factory.create_self_description_service()
         description = await description_service.get_description()
         query_url = context.request.url_for(
-            "query", collection_name=collection.name
+            "query", collection_name=collection_name
         )
-        filename = f"{RESULT_NAME}.xml"
         return _TEMPLATES.TemplateResponse(
             context.request,
             "self-description.xml",
             {"access_url": query_url, **description.to_dict()},
-            headers={
-                "Content-Disposition": f"attachment; filename={filename}",
-                "Content-Type": "application/x-votable+xml",
-            },
+            headers=headers,
             media_type="application/x-votable+xml",
         )
 
     # Otherwise, perform and return the query.
-    return await ResponseHandlerService.process_query(
-        butler=butler,
+    query_service = context.factory.create_query_service()
+    votable = await query_service.run_query(
         raw_params=params,
         sia_query=siav2_query,
-        events=context.events,
+        query_url=str(context.request.url),
         user=user,
-        request=context.request,
-        obscore_config=obscore_config,
+    )
+    return Response(
+        headers=headers,
+        content=votable,
+        media_type="application/x-votable+xml",
     )
