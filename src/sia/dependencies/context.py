@@ -44,9 +44,6 @@ class RequestContext:
     factory: Factory
     """The component factory."""
 
-    events: Events
-    """Events publisher."""
-
     logger: BoundLogger
     """The request logger, rebound with discovered context."""
 
@@ -87,13 +84,13 @@ class ContextDependency:
         """Create a per-request context and return it."""
         if not self._events:
             raise RuntimeError("ContextDependency not initialized")
-        factory = Factory(butler, obscore_config, logger)
-        return RequestContext(
-            request=request,
-            factory=factory,
+        factory = Factory(
+            butler=butler,
+            obscore_config=obscore_config,
             events=self._events,
             logger=logger,
         )
+        return RequestContext(request=request, factory=factory, logger=logger)
 
     async def initialize(self, event_manager: EventManager) -> None:
         """Initialize the process-wide shared context.
