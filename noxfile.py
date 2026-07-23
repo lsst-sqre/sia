@@ -15,9 +15,6 @@ nox.options.sessions = ["lint", "typing", "test", "coverage-report", "docs"]
 nox.options.default_venv_backend = "uv"
 nox.options.reuse_existing_virtualenvs = True
 
-# Value of SIA_BUTLER_DATA_COLLECTIONS for testing.
-_COLLECTIONS = '[{"config":"https://example.com/dp02.yaml", "name":"dp02"}]'
-
 
 @session(name="coverage-report", requires=["test"], uv_groups=["dev"])
 def coverage_report(session: nox.Session) -> None:
@@ -98,8 +95,8 @@ def test(session: nox.Session) -> None:
         *session.posargs,
         env={
             "REPERTOIRE_BASE_URL": "https://example.com/repertoire",
-            "SIA_BUTLER_DATA_COLLECTIONS": _COLLECTIONS,
-            "SIA_ENVIRONMENT_NAME": "testing",
+            "SIA_DATASETS": '["dp02"]',
+            "SIA_OBSCORE_CONFIG": '{"dp02":"https://example.com/dp02.yaml"}',
             "METRICS_APPLICATION": "sia",
             "METRICS_ENABLED": "false",
             "METRICS_MOCK": "true",

@@ -6,7 +6,6 @@ from structlog.stdlib import BoundLogger
 
 from .config import config
 from .models.data_collections import ButlerDataCollection
-from .services.data_collections import DataCollectionService
 
 __all__ = ["Factory"]
 
@@ -57,16 +56,6 @@ class Factory:
         return self._labeled_butler_factory.create_butler(
             label=butler_collection.name, access_token=token
         )
-
-    def create_data_collection_service(self) -> DataCollectionService:
-        """Create a data collection service.
-
-        Returns
-        -------
-        DataCollectionService
-            The data collection service.
-        """
-        return DataCollectionService()
 
     def set_logger(self, logger: BoundLogger) -> None:
         """Replace the internal logger.

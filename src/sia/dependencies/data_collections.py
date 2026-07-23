@@ -1,44 +1,29 @@
 """Data collection dependencies."""
 
-from typing import Annotated
-
-from fastapi import Depends, HTTPException
-
-from ..dependencies.context import RequestContext, context_dependency
+from ..config import config
+from ..exceptions import UsageFaultError
 from ..models.data_collections import ButlerDataCollection
 
 
-def validate_collection(
-    collection_name: str,
-    context: Annotated[RequestContext, Depends(context_dependency)],
-) -> ButlerDataCollection:
+def validate_collection(collection_name: str) -> ButlerDataCollection:
     """Validate the collection name and return the Butler data collection.
 
     Parameters
     ----------
     collection_name
-        The name of the collection.
-    context
-        The request context.
+        Name of the collection.
 
     Returns
     -------
     ButlerDataCollection
-        The Butler data collection.
+        Metadata for the Butler data collection.
 
     Raises
     ------
-    HTTPException
-        If the collection is not found.
+    UsageFaultError
+        Raised if the collection is not found.
     """
-    try:
-        data_collection_service = (
-            context.factory.create_data_collection_service()
-        )
-        return data_collection_service.get_data_collection_by_name(
-            name=collection_name
-        )
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=404, detail=f"Collection '{collection_name}' not found"
-        ) from exc
+    if collection_name not in config.datasets:
+        raise UsageFaultError(f"Collection '{collection_name}' not found", 404)
+    obscore_config = config.obscore_config[collection_name]
+    return ButlerDataCollection(config=obscore_config, name=collection_name)
