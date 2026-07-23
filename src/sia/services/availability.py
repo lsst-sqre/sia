@@ -3,9 +3,7 @@
 from httpx import AsyncClient, HTTPError
 from vo_models.vosi.availability import Availability
 
-from ..dependencies.labeled_butler_factory import (
-    labeled_butler_factory_dependency,
-)
+from ..dependencies.butler import butler_factory_dependency
 from ..models.data_collections import ButlerDataCollection
 
 
@@ -23,9 +21,8 @@ class AvailabilityService:
         Availability
             The availability of the service.
         """
-        butler_url = await labeled_butler_factory_dependency.get_butler_url(
-            self._collection.name
-        )
+        name = self._collection.name
+        butler_url = await butler_factory_dependency.get_butler_url(name)
         if not butler_url:
             note = f"Unknown collection {self._collection.name}"
             return Availability(note=[note], available=False)

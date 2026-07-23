@@ -16,7 +16,6 @@ from structlog.stdlib import BoundLogger
 
 from ..events import Events
 from ..factory import Factory
-from .labeled_butler_factory import labeled_butler_factory_dependency
 
 __all__ = [
     "ContextDependency",
@@ -80,10 +79,7 @@ class ContextDependency:
         """Create a per-request context and return it."""
         if not self._events:
             raise RuntimeError("ContextDependency not initialized")
-        factory = Factory(
-            logger=logger,
-            labeled_butler_factory=await labeled_butler_factory_dependency(),
-        )
+        factory = Factory(logger=logger)
         return RequestContext(
             request=request,
             logger=logger,
