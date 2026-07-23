@@ -4,12 +4,12 @@
     xmlns:vod="http://www.ivoa.net/xml/VODataService/v1.1">
   <capability standardID="ivo://ivoa.net/std/VOSI#capabilities">
     <interface xsi:type="vod:ParamHTTP" version="1.0">
-      <accessURL use="full">{{ capabilities_url }}</accessURL>
+      <accessURL use="full">https://example.com/api/sia/dp02/capabilities</accessURL>
     </interface>
   </capability>
   <capability standardID="ivo://ivoa.net/std/VOSI#availability">
     <interface xsi:type="vod:ParamHTTP" version="1.0">
-      <accessURL use="full">{{ availability_url }}</accessURL>
+      <accessURL use="full">https://example.com/api/sia/dp02/availability</accessURL>
     </interface>
   </capability>
    <capability standardID="ivo://ivoa.net/std/SIA#query-2.0">
@@ -19,7 +19,7 @@
        <securityMethod standardID="ivo://ivoa.net/sso#OAuth"/>
        <securityMethod standardID="ivo://ivoa.net/sso#saml2.0"/>
        <securityMethod standardID="ivo://ivoa.net/sso#OpenID"/>
-       <accessURL>{{ query_url }}</accessURL>
+       <accessURL>https://example.com/api/sia/dp02/query</accessURL>
      </interface>
    </capability>
 </capabilities>
