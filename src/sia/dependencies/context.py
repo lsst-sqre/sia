@@ -14,7 +14,6 @@ from safir.dependencies.logger import logger_dependency
 from safir.metrics import EventManager
 from structlog.stdlib import BoundLogger
 
-from ..config import Config
 from ..events import Events
 from ..factory import Factory
 from .labeled_butler_factory import labeled_butler_factory_dependency
@@ -39,9 +38,6 @@ class RequestContext:
 
     request: Request
     """The incoming request."""
-
-    config: Config
-    """SIA's configuration."""
 
     logger: BoundLogger
     """The request logger, rebound with discovered context."""
@@ -74,7 +70,6 @@ class ContextDependency:
     """
 
     def __init__(self) -> None:
-        self._config: Config | None = None
         self._events: Events | None = None
 
     async def __call__(
@@ -84,12 +79,11 @@ class ContextDependency:
         logger: Annotated[BoundLogger, Depends(logger_dependency)],
     ) -> RequestContext:
         """Create a per-request context and return it."""
-        if not self._config or not self._events:
+        if not self._events:
             raise RuntimeError("ContextDependency not initialized")
 
         return RequestContext(
             request=request,
-            config=self._config,
             logger=logger,
             factory=await self.create_factory(logger=logger),
             events=self._events,
@@ -97,33 +91,20 @@ class ContextDependency:
 
     async def create_factory(self, logger: BoundLogger) -> Factory:
         """Create a factory for use outside a request context."""
-        if not self._config:
-            raise RuntimeError("ContextDependency not initialized")
-
         return Factory(
             logger=logger,
-            config=self._config,
             labeled_butler_factory=await labeled_butler_factory_dependency(),
             obscore_configs=await obscore_config_dependency(),
         )
 
-    async def aclose(self) -> None:
-        """Clean up the per-process configuration."""
-        self._config = None
-
-    async def initialize(
-        self, config: Config, event_manager: EventManager
-    ) -> None:
+    async def initialize(self, event_manager: EventManager) -> None:
         """Initialize the process-wide shared context.
 
         Parameters
         ----------
-        config
-            SIA configuration.
         event_manager
             Global event manager.
         """
-        self._config = config
         self._events = Events()
         await self._events.initialize(event_manager)
 

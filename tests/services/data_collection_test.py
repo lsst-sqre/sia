@@ -5,19 +5,17 @@ import re
 import pytest
 from pydantic import HttpUrl
 
-from sia.config import Config
-from sia.exceptions import FatalFaultError
 from sia.services.data_collections import DataCollectionService
 
 
 @pytest.mark.asyncio
-async def test_get_data_repositories(test_config: Config) -> None:
+async def test_get_data_repositories() -> None:
     """Test get_data_repositories function."""
     expected_repos = {
         "LSST.DP02": "https://example.com/api/butler/repo/dp02/butler.yaml"
     }
 
-    result = DataCollectionService(config=test_config).get_data_repositories()
+    result = DataCollectionService().get_data_repositories()
 
     assert result == expected_repos, (
         f"Expected {expected_repos}, but got {result}"
@@ -30,14 +28,10 @@ async def test_get_data_repositories(test_config: Config) -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_data_collection_with_label(
-    test_config: Config,
-) -> None:
+async def test_get_data_collection_with_label() -> None:
     """Test get_data_collection function with a label."""
     label = "LSST.DP02"
-    result = DataCollectionService(
-        config=test_config
-    ).get_data_collection_by_label(label=label)
+    result = DataCollectionService().get_data_collection_by_label(label=label)
     assert result.label == label
     assert result.repository == HttpUrl(
         "https://example.com/api/butler/repo/dp02/butler.yaml"
@@ -45,14 +39,10 @@ async def test_get_data_collection_with_label(
 
 
 @pytest.mark.asyncio
-async def test_get_data_collection_with_name(
-    test_config: Config,
-) -> None:
+async def test_get_data_collection_with_name() -> None:
     """Test get_data_collection function with a name."""
     name = "dp02"
-    result = DataCollectionService(
-        config=test_config
-    ).get_data_collection_by_name(name=name)
+    result = DataCollectionService().get_data_collection_by_name(name=name)
     assert result.name == name
     assert result.repository == HttpUrl(
         "https://example.com/api/butler/repo/dp02/butler.yaml"
@@ -60,46 +50,22 @@ async def test_get_data_collection_with_name(
 
 
 @pytest.mark.asyncio
-async def test_get_data_collection_no_label(
-    test_config: Config,
-) -> None:
+async def test_get_data_collection_no_label() -> None:
     """Test get_data_collection function with no label."""
     with pytest.raises(
         ValueError,
         match=re.escape("Label is required."),
     ):
-        DataCollectionService(config=test_config).get_data_collection_by_label(
-            label=""
-        )
+        DataCollectionService().get_data_collection_by_label(label="")
 
 
 @pytest.mark.asyncio
-async def test_get_data_collection_empty_config() -> None:
-    """Test get_data_collection function with an empty configuration."""
-    with pytest.raises(
-        FatalFaultError,
-        match=re.escape(
-            "FatalFault: No Data Collections configured. Please configure "
-            "at least one Data collection."
-        ),
-    ):
-        empty_config = Config(
-            butler_data_collections=[],
-        )
-        DataCollectionService(
-            config=empty_config
-        ).get_data_collection_by_label(label="")
-
-
-@pytest.mark.asyncio
-async def test_get_data_collection_invalid_label(
-    test_config: Config,
-) -> None:
+async def test_get_data_collection_invalid_label() -> None:
     """Test get_data_collection function with an invalid label."""
     with pytest.raises(
         KeyError,
         match="Label InvalidLabel not found in Data collections",
     ):
-        DataCollectionService(config=test_config).get_data_collection_by_label(
+        DataCollectionService().get_data_collection_by_label(
             label="InvalidLabel"
         )

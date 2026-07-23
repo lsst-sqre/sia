@@ -5,7 +5,7 @@ from lsst.daf.butler import Butler, LabeledButlerFactory
 from lsst.dax.obscore import ExporterConfig
 from structlog.stdlib import BoundLogger
 
-from .config import Config
+from .config import config
 from .models.data_collections import ButlerDataCollection
 from .services.data_collections import DataCollectionService
 
@@ -20,8 +20,6 @@ class Factory:
 
     Parameters
     ----------
-    config
-        The configuration instance
     labeled_butler_factory
         The LabeledButlerFactory singleton
     obscore_configs
@@ -32,15 +30,13 @@ class Factory:
 
     def __init__(
         self,
-        config: Config,
         labeled_butler_factory: LabeledButlerFactory,
         obscore_configs: dict[str, ExporterConfig],
         logger: BoundLogger | None = None,
     ) -> None:
-        self._config = config
         self._labeled_butler_factory = labeled_butler_factory
         self._obscore_configs = obscore_configs
-        self._logger = logger or structlog.get_logger(self._config.name)
+        self._logger = logger or structlog.get_logger(config.name)
 
     def create_butler(
         self,
@@ -88,9 +84,7 @@ class Factory:
         DataCollectionService
             The data collection service.
         """
-        return DataCollectionService(
-            config=self._config,
-        )
+        return DataCollectionService()
 
     def set_logger(self, logger: BoundLogger) -> None:
         """Replace the internal logger.

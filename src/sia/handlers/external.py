@@ -95,9 +95,9 @@ async def get_index(
 )
 async def get_availability(collection_name: str) -> Response:
     # Get the butler data collection
-    collection = DataCollectionService(
-        config=config
-    ).get_data_collection_by_name(name=collection_name)
+    collection = DataCollectionService().get_data_collection_by_name(
+        name=collection_name
+    )
 
     # Check if it is available
     availability = await AvailabilityService(

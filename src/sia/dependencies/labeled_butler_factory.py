@@ -2,7 +2,6 @@
 
 from lsst.daf.butler import LabeledButlerFactory
 
-from ..config import Config
 from ..services.data_collections import DataCollectionService
 
 
@@ -12,16 +11,11 @@ class LabeledButlerFactoryDependency:
     def __init__(self) -> None:
         self._labeled_butler_factory: LabeledButlerFactory | None = None
 
-    async def initialize(
-        self,
-        config: Config,
-    ) -> None:
+    async def initialize(self) -> None:
         """Initialize the dependency."""
         # Get the data repositories from the config in a format suitable for
         # the LabeledButlerFactory.
-        data_repositories = DataCollectionService(
-            config=config
-        ).get_data_repositories()
+        data_repositories = DataCollectionService().get_data_repositories()
 
         self._labeled_butler_factory = LabeledButlerFactory(
             repositories=data_repositories
