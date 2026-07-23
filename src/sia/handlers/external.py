@@ -5,12 +5,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
+from lsst.daf.butler import Butler
 from lsst.dax.obscore import ExporterConfig
 from lsst.dax.obscore.siav2 import siav2_query
-from safir.dependencies.gafaelfawr import (
-    auth_delegated_token_dependency,
-    auth_dependency,
-)
+from safir.dependencies.gafaelfawr import auth_dependency
 from safir.dependencies.logger import logger_dependency
 from safir.metadata import get_metadata
 from safir.models import ErrorModel
@@ -19,6 +17,7 @@ from vo_models.vosi.availability import Availability
 from vo_models.vosi.capabilities.models import VOSICapabilities
 
 from ..config import config
+from ..dependencies.butler import butler_dependency
 from ..dependencies.context import RequestContext, context_dependency
 from ..dependencies.data_collections import validate_collection
 from ..dependencies.obscore_configs import obscore_config_dependency
@@ -180,18 +179,17 @@ async def get_capabilities(
 async def query(
     *,
     context: Annotated[RequestContext, Depends(context_dependency)],
+    butler: Annotated[Butler, Depends(butler_dependency)],
     obscore_config: Annotated[
         ExporterConfig, Depends(obscore_config_dependency)
     ],
     collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
     raw_params: Annotated[SIAQueryParams, Depends(get_sia_params_dependency)],
     user: Annotated[str, Depends(auth_dependency)],
-    token: Annotated[str, Depends(auth_delegated_token_dependency)],
 ) -> Response:
     return await ResponseHandlerService.process_query(
-        factory=context.factory,
+        butler=butler,
         raw_params=raw_params,
-        token=token,
         sia_query=siav2_query,
         collection=collection,
         events=context.events,
