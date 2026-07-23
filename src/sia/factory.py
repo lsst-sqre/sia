@@ -4,7 +4,9 @@ from lsst.daf.butler import Butler
 from lsst.dax.obscore import ExporterConfig
 from structlog.stdlib import BoundLogger
 
+from .events import Events
 from .services.description import SelfDescriptionService
+from .services.query import QueryService
 
 __all__ = ["Factory"]
 
@@ -23,6 +25,8 @@ class Factory:
         Remote Butler client for the relevant collection.
     obscore_config
         ObsCore exporter configuration for the relevant collection.
+    events
+        Events publishers.
     logger
         Logger to use.
     """
@@ -31,11 +35,28 @@ class Factory:
         self,
         butler: Butler,
         obscore_config: ExporterConfig,
+        events: Events,
         logger: BoundLogger,
     ) -> None:
         self._butler = butler
         self._obscore_config = obscore_config
+        self._events = events
         self._logger = logger
+
+    def create_query_service(self) -> QueryService:
+        """Create the service that executes SIA queries.
+
+        Returns
+        -------
+        QueryService
+            Newly-created service.
+        """
+        return QueryService(
+            butler=self._butler,
+            obscore_config=self._obscore_config,
+            events=self._events,
+            logger=self._logger,
+        )
 
     def create_self_description_service(self) -> SelfDescriptionService:
         """Create the service to generate SIA self-descriptions.

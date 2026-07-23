@@ -49,9 +49,6 @@ class RequestContext:
     collection: ButlerDataCollection
     """Name of the Butler collection specified in the request."""
 
-    events: Events
-    """Events publisher."""
-
     logger: BoundLogger
     """The request logger, rebound with discovered context."""
 
@@ -95,12 +92,16 @@ class ContextDependency:
         """Create a per-request context and return it."""
         if not self._events:
             raise RuntimeError("ContextDependency not initialized")
-        factory = Factory(butler, obscore_config, logger)
+        factory = Factory(
+            butler=butler,
+            obscore_config=obscore_config,
+            events=self._events,
+            logger=logger,
+        )
         return RequestContext(
             request=request,
             factory=factory,
             collection=collection,
-            events=self._events,
             logger=logger,
         )
 
