@@ -17,7 +17,6 @@ from safir.sentry import duration
 from ..constants import BASE_RESOURCE_IDENTIFIER
 from ..constants import RESULT_NAME as RESULT
 from ..events import Events, SIAQueryFailed, SIAQuerySucceeded
-from ..factory import Factory
 from ..models.data_collections import ButlerDataCollection
 from ..models.sia_query_params import BandInfo, SIAQueryParams
 from ..sentry import capturing_start_span
@@ -151,14 +150,13 @@ class ResponseHandlerService:
     @staticmethod
     async def process_query(
         *,
-        factory: Factory,
+        butler: Butler,
         raw_params: SIAQueryParams,
         sia_query: SIAv2QueryType,
         request: Request,
         collection: ButlerDataCollection,
         events: Events,
         user: str,
-        token: str,
         obscore_config: ExporterConfig,
     ) -> Response:
         """Process the SIAv2 query and generate a Response.
@@ -179,8 +177,6 @@ class ResponseHandlerService:
             Object with attributes for all metrics event publishers.
         user
             The username.
-        token
-            The token to use for the Butler.
         obscore_config
             The ObsCore configuration.
 
@@ -202,15 +198,6 @@ class ResponseHandlerService:
         )
 
         loop = asyncio.get_running_loop()
-
-        # Run Butler creation in a thread pool
-        butler = await loop.run_in_executor(
-            None,
-            lambda: factory.create_butler(
-                butler_collection=collection,
-                token=token,
-            ),
-        )
 
         if params.maxrec == 0:
             logger.info(
