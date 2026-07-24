@@ -9,8 +9,6 @@ from lsst.daf.butler import ButlerConfig
 from lsst.dax.obscore import ExporterConfig
 from pydantic import Field, HttpUrl
 
-from ..models.butler_type import ButlerType
-
 
 @dataclass
 class ButlerDataCollection:
@@ -38,15 +36,6 @@ class ButlerDataCollection:
                 " 'dp02' would be used in the URL '/api/sia/dp02/query'."
             ),
             examples=["dp02"],
-        ),
-    ]
-
-    butler_type: Annotated[
-        ButlerType,
-        Field(
-            title="Butler type",
-            description="The Butler type for this data collection.",
-            examples=["REMOTE"],
         ),
     ]
 

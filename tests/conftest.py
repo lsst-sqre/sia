@@ -14,7 +14,6 @@ from rubin.repertoire import Discovery, register_mock_discovery
 
 from sia import main
 from sia.config import Config, config
-from sia.models.butler_type import ButlerType
 from sia.models.data_collections import ButlerDataCollection
 
 from .support.butler import (
@@ -40,9 +39,7 @@ def _config(data: SiaData, monkeypatch: pytest.MonkeyPatch) -> Config:
     """Override configuration to use remote Butler."""
     butler_collections = [
         ButlerDataCollection(
-            config=data.path("config/dp02.yaml"),
-            name="dp02",
-            butler_type=ButlerType.REMOTE,
+            config=data.path("config/dp02.yaml"), name="dp02"
         ),
     ]
     monkeypatch.setattr(config, "path_prefix", "/api/sia")

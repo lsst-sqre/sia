@@ -19,7 +19,7 @@ nox.options.reuse_existing_virtualenvs = True
 _COLLECTIONS = (
     '[{"config":"https://example.com/dp02.yaml", '
     '"datalink_url":"https://example.com/links?ID=butler%3A//dp02", '
-    '"name":"dp02", "butler_type":"REMOTE"}]'
+    '"name":"dp02"}]'
 )
 
 
