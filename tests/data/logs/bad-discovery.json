@@ -1,0 +1,22 @@
+[
+  {
+    "event": "No Butler configuration found for 'dp02'",
+    "httpRequest": {
+      "remoteIp": "127.0.0.1",
+      "requestMethod": "GET",
+      "requestUrl": "https://example.com/api/sia/dp02/query?pos=CIRCLE+320+-0.1+10.7"
+    },
+    "severity": "error",
+    "user": "user"
+  },
+  {
+    "event": "Using cached Butler configuration",
+    "httpRequest": {
+      "remoteIp": "127.0.0.1",
+      "requestMethod": "GET",
+      "requestUrl": "https://example.com/api/sia/dp02/query?pos=CIRCLE+320+-0.1+10.7"
+    },
+    "severity": "warning",
+    "user": "user"
+  }
+]

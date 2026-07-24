@@ -3,7 +3,11 @@
 from typing import Any
 
 import pytest
+import respx
 from httpx import AsyncClient
+from rubin.repertoire import register_mock_discovery
+from safir.dependencies.http_client import http_client_dependency
+from safir.testing.logging import parse_log_tuples
 
 from sia.config import config
 from sia.constants import RESULT_NAME
@@ -238,3 +242,56 @@ async def test_query_unknown(client: AsyncClient) -> None:
         f"{config.path_prefix}/dp1/query", data={"MAXREC": 0}
     )
     assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_bad_discovery(
+    *,
+    data: SiaData,
+    client: AsyncClient,
+    respx_mock: respx.Router,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test having service discovery drop a dataset SIA is serving."""
+    caplog.clear()
+    r = await client.get(
+        f"{config.path_prefix}/dp02/query",
+        params={"POS": "CIRCLE 320 -0.1 10.7"},
+    )
+    assert r.status_code == 200
+    data.assert_votable_matches(r.text, "responses/votable.xml")
+    seen_log_messages = [
+        m
+        for m in parse_log_tuples("sia", caplog.record_tuples)
+        if m["severity"] not in ("info", "debug")
+    ]
+    assert seen_log_messages == []
+
+    # Now, replace service discovery information with empty information, which
+    # is missing any configuration for dp02.
+    path = data.path("discovery/empty.json")
+    register_mock_discovery(respx_mock, path)
+
+    # Clear the service discovery cache by changing the underlying HTTP
+    # client, which forces recreation of the Repertoire client. This is a hack
+    # that should be replaced with a proper way to clear the cache in
+    # rubin.repertoire.
+    await http_client_dependency.aclose()
+
+    # The query should still succeed, since cached Butler information should
+    # be used even though the service discovery information has been updated.
+    caplog.clear()
+    r = await client.get(
+        f"{config.path_prefix}/dp02/query",
+        params={"POS": "CIRCLE 320 -0.1 10.7"},
+    )
+    assert r.status_code == 200
+    data.assert_votable_matches(r.text, "responses/votable.xml")
+
+    # An error and a warning should have been logged.
+    seen_log_messages = [
+        m
+        for m in parse_log_tuples("sia", caplog.record_tuples)
+        if m["severity"] not in ("info", "debug")
+    ]
+    data.assert_json_matches(seen_log_messages, "logs/bad-discovery")
