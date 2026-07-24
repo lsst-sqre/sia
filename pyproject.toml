@@ -60,6 +60,7 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
+    "pytest-sugar",
     "respx",
     "uv",
 ]
@@ -134,6 +135,10 @@ warn_untyped_fields = true
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
 asyncio_mode = "strict"
+filterwarnings = [
+    # dataclasses-avroschema hasn't been fully updated for Python 3.14
+    "ignore:.*'_UnionGenericAlias' is deprecated.*:DeprecationWarning",
+]
 # The python_files setting is not for test detection (pytest will pick up any
 # test files named *_test.py without this setting) but to enable special
 # assert processing in any non-test supporting files under tests.  We
