@@ -28,6 +28,7 @@ from safir.slack.webhook import SlackRouteErrorHandler
 
 from . import __version__
 from .config import config
+from .dependencies.butler import butler_factory_dependency
 from .dependencies.context import context_dependency
 from .errors import votable_exception_handler
 from .exceptions import VOTableError
@@ -47,6 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     logger = structlog.get_logger("sia")
     logger.debug("SIA has started up.")
     discovery_dependency.initialize(logger)
+    await butler_factory_dependency.initialize(logger)
     event_manager = config.metrics.make_manager()
     await event_manager.initialize()
     await context_dependency.initialize(event_manager=event_manager)
