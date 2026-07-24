@@ -4,11 +4,11 @@ from typing import Annotated
 
 from fastapi import Depends
 from lsst.daf.butler import Butler, LabeledButlerFactory
-from rubin.repertoire import DiscoveryClient
+from rubin.repertoire import DiscoveryClient, discovery_dependency
 from safir.dependencies.gafaelfawr import auth_delegated_token_dependency
 
 from ..config import config
-from ..exceptions import FatalFaultError
+from ..exceptions import FatalFaultError, UsageFaultError
 from ..models.data_collections import ButlerDataCollection
 from .data_collections import validate_collection
 
@@ -27,41 +27,54 @@ class ButlerFactoryDependency:
     """
 
     def __init__(self) -> None:
-        self._discovery = DiscoveryClient()
         self._repositories: dict[str, str] = {}
         self._butler_factory: LabeledButlerFactory | None = None
 
-    async def __call__(self) -> LabeledButlerFactory:
-        return await self._build_butler_factory()
+    async def __call__(
+        self,
+        discovery: Annotated[DiscoveryClient, Depends(discovery_dependency)],
+    ) -> LabeledButlerFactory:
+        return await self._build_butler_factory(discovery)
 
-    async def get_butler_url(self, name: str) -> str | None:
+    async def butler_url(
+        self,
+        collection_name: str,
+        discovery: Annotated[DiscoveryClient, Depends(discovery_dependency)],
+    ) -> str:
         """Return the Butler URL for a given collection name.
 
-        This is used by the availability checker to get a Butler URL that can
-        be probed to see if the Butler server is running.
+        This is used by the availability checker as a FastAPI dependency to
+        get a Butler URL that can be probed to see if the Butler server is
+        running.
 
         Parameters
         ----------
-        name
+        collection_name
             Name of the collection.
+        discovery
+            Service discovery client.
 
         Returns
         -------
         str or None
-            URL of the Butler configuration for that collection or `None` if
-            the collection is unknown.
+            URL of the Butler configuration for that collection.
         """
-        await self._build_butler_factory()
-        return self._repositories.get(name)
+        await self._build_butler_factory(discovery)
+        if collection_name not in self._repositories:
+            msg = f"Collection '{collection_name}' not found"
+            raise UsageFaultError(msg, 404)
+        return self._repositories[collection_name]
 
-    async def _build_butler_factory(self) -> LabeledButlerFactory:
+    async def _build_butler_factory(
+        self, discovery: DiscoveryClient
+    ) -> LabeledButlerFactory:
         """Get a labeled Butler factory.
 
         Returns the cached Butler factory if it exists and service discovery
         information has not changed. Otherwise, recreates the labeled Butler
         factory with current discovery information.
         """
-        repositories = await self._discovery.butler_repositories()
+        repositories = await discovery.butler_repositories()
         if self._butler_factory and repositories == self._repositories:
             return self._butler_factory
         for dataset in config.datasets:
