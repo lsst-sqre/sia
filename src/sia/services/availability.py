@@ -3,34 +3,37 @@
 from httpx import AsyncClient, HTTPError
 from vo_models.vosi.availability import Availability
 
-from ..dependencies.butler import butler_factory_dependency
-from ..models.data_collections import ButlerDataCollection
+__all__ = ["AvailabilityService"]
 
 
 class AvailabilityService:
-    """Service for checking the availability of the system."""
+    """Service for checking the availability of the system.
 
-    def __init__(self, collection: ButlerDataCollection) -> None:
-        self._collection = collection
+    Parameters
+    ----------
+    http_client
+        HTTP client to use for health checks.
+    """
 
-    async def get_availability(self) -> Availability:
+    def __init__(self, http_client: AsyncClient) -> None:
+        self._client = http_client
+
+    async def get_availability(self, butler_url: str) -> Availability:
         """Check the availability of the system.
+
+        Parameters
+        ----------
+        butler_url
+            URL to check the health of the underlying Butler server.
 
         Returns
         -------
         Availability
             The availability of the service.
         """
-        name = self._collection.name
-        butler_url = await butler_factory_dependency.get_butler_url(name)
-        if not butler_url:
-            note = f"Unknown collection {self._collection.name}"
-            return Availability(note=[note], available=False)
-
-        async with AsyncClient() as client:
-            try:
-                r = await client.get(butler_url)
-                r.raise_for_status()
-                return Availability(available=True)
-            except HTTPError as exc:
-                return Availability(note=[str(exc)], available=False)
+        try:
+            r = await self._client.get(butler_url)
+            r.raise_for_status()
+            return Availability(available=True)
+        except HTTPError as exc:
+            return Availability(note=[str(exc)], available=False)
