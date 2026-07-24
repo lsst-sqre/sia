@@ -1,0 +1,2 @@
+<availability xmlns="http://www.ivoa.net/xml/VOSIAvailability/v1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><available>false</available><note>Client error '404 Not Found' for url 'https://example.com/api/butler/repo/dp02/butler.yaml'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</note></availability>

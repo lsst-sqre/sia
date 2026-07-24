@@ -32,6 +32,7 @@ dependencies = [
     "pydantic-xml",
     "python-multipart",
     "requests",
+    "rubin-repertoire>=2",
     "safir[kafka]>=14.1.2",
     "sentry-sdk>=2",
     "structlog",
@@ -59,6 +60,7 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
+    "respx",
     "uv",
 ]
 docs = [

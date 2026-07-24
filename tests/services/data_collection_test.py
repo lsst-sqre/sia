@@ -1,71 +1,16 @@
 """Tests for the config_reader module."""
 
-import re
-
 import pytest
-from pydantic import HttpUrl
 
 from sia.services.data_collections import DataCollectionService
 
-
-@pytest.mark.asyncio
-async def test_get_data_repositories() -> None:
-    """Test get_data_repositories function."""
-    expected_repos = {
-        "LSST.DP02": "https://example.com/api/butler/repo/dp02/butler.yaml"
-    }
-
-    result = DataCollectionService().get_data_repositories()
-
-    assert result == expected_repos, (
-        f"Expected {expected_repos}, but got {result}"
-    )
-    assert len(result) == 1, f"Expected 1 repository, but got {len(result)}"
-    assert "LSST.DP02" in result, "Expected 'LSST.DP02' to be in the result"
-    assert result["LSST.DP02"] == (
-        "https://example.com/api/butler/repo/dp02/butler.yaml"
-    ), f"Unexpected repository URL for LSST.DP02: {result['LSST.DP02']}"
+from ..support.data import SiaData
 
 
 @pytest.mark.asyncio
-async def test_get_data_collection_with_label() -> None:
-    """Test get_data_collection function with a label."""
-    label = "LSST.DP02"
-    result = DataCollectionService().get_data_collection_by_label(label=label)
-    assert result.label == label
-    assert result.repository == HttpUrl(
-        "https://example.com/api/butler/repo/dp02/butler.yaml"
-    )
-
-
-@pytest.mark.asyncio
-async def test_get_data_collection_with_name() -> None:
+async def test_get_data_collection_with_name(data: SiaData) -> None:
     """Test get_data_collection function with a name."""
     name = "dp02"
     result = DataCollectionService().get_data_collection_by_name(name=name)
     assert result.name == name
-    assert result.repository == HttpUrl(
-        "https://example.com/api/butler/repo/dp02/butler.yaml"
-    )
-
-
-@pytest.mark.asyncio
-async def test_get_data_collection_no_label() -> None:
-    """Test get_data_collection function with no label."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Label is required."),
-    ):
-        DataCollectionService().get_data_collection_by_label(label="")
-
-
-@pytest.mark.asyncio
-async def test_get_data_collection_invalid_label() -> None:
-    """Test get_data_collection function with an invalid label."""
-    with pytest.raises(
-        KeyError,
-        match="Label InvalidLabel not found in Data collections",
-    ):
-        DataCollectionService().get_data_collection_by_label(
-            label="InvalidLabel"
-        )
+    assert result.config == data.path("config/dp02.yaml")

@@ -48,34 +48,6 @@ class DataCollectionService:
             f"{key.capitalize()} {value} not found in Data collections."
         )
 
-    def get_data_collection_by_label(
-        self,
-        *,
-        label: str,
-    ) -> ButlerDataCollection:
-        """Return the Data collection URL for the given label.
-
-        Parameters
-        ----------
-        label
-            The label of the data collection.
-
-        Returns
-        -------
-        ButlerDataCollection
-            The Butler Data collection.
-
-        Raises
-        ------
-        ValueError
-            No label was provided
-        KeyError
-            If the label is not found in the Data collections.
-        """
-        return self._get_data_collection(
-            key="label", value=label, attribute="label"
-        )
-
     def get_data_collection_by_name(
         self,
         *,
@@ -104,24 +76,3 @@ class DataCollectionService:
         return self._get_data_collection(
             key="name", value=name, attribute="name"
         )
-
-    def get_data_repositories(self) -> dict[str, str]:
-        """Read the Data repositories from config and return a dictionary
-        mapping labels to repository URLs.
-        This is used to populate the LabeledButlerFactory.
-
-        Returns
-        -------
-        dict
-            A dictionary mapping labels to repository URLs.
-        """
-        butler_repos = {}
-
-        for collection in config.butler_data_collections:
-            label = collection.label
-            repository = collection.repository
-
-            if label and repository:
-                butler_repos[label] = str(repository)
-
-        return butler_repos

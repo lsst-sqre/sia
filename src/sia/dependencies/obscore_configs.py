@@ -18,10 +18,10 @@ class ObscoreConfigDependency:
         self._config_mapping = {}
         for collection in config.butler_data_collections:
             exporter_config = collection.get_exporter_config()
-            self._config_mapping[collection.label] = exporter_config
+            self._config_mapping[collection.name] = exporter_config
 
     async def __call__(self) -> dict[str, ExporterConfig]:
-        """Return the mapping of label names to ExporterConfigs."""
+        """Return the mapping of names to ExporterConfigs."""
         if self._config_mapping is None:
             raise RuntimeError("ExporterConfigDependency is not initialized")
         return self._config_mapping

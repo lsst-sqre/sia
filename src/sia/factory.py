@@ -58,7 +58,7 @@ class Factory:
             The Butler instance.
         """
         return self._labeled_butler_factory.create_butler(
-            label=butler_collection.label, access_token=token
+            label=butler_collection.name, access_token=token
         )
 
     def create_obscore_config(self, label: str) -> ExporterConfig:

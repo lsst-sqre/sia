@@ -9,8 +9,6 @@ from lsst.daf.butler import ButlerConfig
 from lsst.dax.obscore import ExporterConfig
 from pydantic import Field, HttpUrl
 
-from ..models.butler_type import ButlerType
-
 
 @dataclass
 class ButlerDataCollection:
@@ -28,30 +26,6 @@ class ButlerDataCollection:
         ),
     ]
 
-    repository: Annotated[
-        HttpUrl | Path,
-        Field(
-            title="Butler repository",
-            description="Butler repository path or URL",
-            examples=[
-                "https://example.com/butler-repo/path/to/local/repository",
-                "/path/to/local/butler/repository",
-            ],
-        ),
-    ]
-
-    label: Annotated[
-        str,
-        Field(
-            title="Butler label",
-            description=(
-                "The label for this Butler collection. Used to identify the"
-                " collection in the case where we are using a remote Butler."
-            ),
-            examples=["LSST.DP02"],
-        ),
-    ]
-
     name: Annotated[
         str,
         Field(
@@ -62,15 +36,6 @@ class ButlerDataCollection:
                 " 'dp02' would be used in the URL '/api/sia/dp02/query'."
             ),
             examples=["dp02"],
-        ),
-    ]
-
-    butler_type: Annotated[
-        ButlerType,
-        Field(
-            title="Butler type",
-            description="The Butler type for this data collection.",
-            examples=["REMOTE"],
         ),
     ]
 
@@ -86,17 +51,6 @@ class ButlerDataCollection:
             ),
         ),
     ] = None
-
-    @property
-    def identifier(self) -> str:
-        """Get the identifier for the data collection.
-
-        Returns
-        -------
-        str
-            The identifier.
-        """
-        return f"{self.label}:{self.repository}"
 
     def get_exporter_config(self) -> ExporterConfig:
         """Get the exporter configuration.
