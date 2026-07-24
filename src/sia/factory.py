@@ -33,6 +33,7 @@ class Factory:
 
     def __init__(
         self,
+        *,
         butler: Butler,
         obscore_config: ExporterConfig,
         events: Events,

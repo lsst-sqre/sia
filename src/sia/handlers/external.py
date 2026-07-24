@@ -5,8 +5,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
+from httpx import AsyncClient
 from lsst.dax.obscore.siav2 import siav2_query
 from safir.dependencies.gafaelfawr import auth_dependency
+from safir.dependencies.http_client import http_client_dependency
 from safir.dependencies.logger import logger_dependency
 from safir.metadata import get_metadata
 from safir.models import ErrorModel
@@ -16,6 +18,7 @@ from vo_models.vosi.capabilities.models import VOSICapabilities
 
 from ..config import config
 from ..constants import RESULT_NAME
+from ..dependencies.butler import butler_factory_dependency
 from ..dependencies.context import RequestContext, context_dependency
 from ..dependencies.data_collections import validate_collection
 from ..dependencies.query_params import get_sia_params_dependency
@@ -90,11 +93,11 @@ async def get_index(
     summary="IVOA service availability",
 )
 async def get_availability(
-    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
+    butler_url: Annotated[str, Depends(butler_factory_dependency.butler_url)],
+    http_client: Annotated[AsyncClient, Depends(http_client_dependency)],
 ) -> Response:
-    availability = await AvailabilityService(
-        collection=collection
-    ).get_availability()
+    availability_service = AvailabilityService(http_client)
+    availability = await availability_service.get_availability(butler_url)
     xml = availability.to_xml(skip_empty=True)
     return Response(content=xml, media_type="application/xml")
 
