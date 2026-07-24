@@ -2,7 +2,6 @@
 
 from collections.abc import AsyncGenerator, Iterator
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock
 
 import pytest
 import pytest_asyncio
@@ -15,12 +14,7 @@ from rubin.repertoire import Discovery, register_mock_discovery
 from sia import main
 from sia.config import Config, config
 
-from .support.butler import (
-    MockButler,
-    MockButlerQueryService,
-    patch_butler,
-    patch_siav2_query,
-)
+from .support.butler import MockButler, patch_butler, patch_siav2_query
 from .support.data import SiaData
 
 
@@ -39,6 +33,20 @@ def _config(data: SiaData, monkeypatch: pytest.MonkeyPatch) -> Config:
     obscore_config = {"dp02": str(data.path("config/dp02.yaml"))}
     monkeypatch.setattr(config, "obscore_config", obscore_config)
     return config
+
+
+@pytest.fixture(autouse=True)
+def _mock_butler() -> Iterator[MockButler]:
+    """Mock Butler for testing."""
+    with patch_butler() as butler:
+        yield butler
+
+
+@pytest.fixture(autouse=True)
+def _mock_siav2_query() -> Iterator[None]:
+    """Mock ObsCore SIAv2 implementation for testing."""
+    with patch_siav2_query():
+        yield
 
 
 @pytest_asyncio.fixture
@@ -92,35 +100,6 @@ def data(request: pytest.FixtureRequest) -> SiaData:
     return SiaData(Path(__file__).parent / "data", update_test_data=update)
 
 
-@pytest.fixture
-def mock_async_client(
-    monkeypatch: pytest.MonkeyPatch,
-) -> tuple[AsyncMock, AsyncMock]:
-    """Return a mock AsyncClient and a mock response object.
-
-    Parameters
-    ----------
-    monkeypatch
-        The pytest monkeypatch fixture
-
-    Returns
-    -------
-    tuple[AsyncMock, AsyncMock]
-        The mock AsyncClient and mock response objects
-    """
-    mock_response = AsyncMock()
-    mock_response.status_code = 200
-
-    mock_client = AsyncMock(spec=AsyncClient)
-    mock_client.__aenter__.return_value.get.return_value = mock_response
-
-    monkeypatch.setattr(
-        "sia.services.availability.AsyncClient", lambda: mock_client
-    )
-
-    return mock_client, mock_response
-
-
 @pytest.fixture(autouse=True)
 def mock_discovery(
     data: SiaData, respx_mock: respx.Router, monkeypatch: pytest.MonkeyPatch
@@ -128,43 +107,3 @@ def mock_discovery(
     monkeypatch.setenv("REPERTOIRE_BASE_URL", "https://example.com/repertoire")
     path = data.path("discovery.json")
     return register_mock_discovery(respx_mock, path)
-
-
-@pytest.fixture
-def mock_exporter_config(monkeypatch: pytest.MonkeyPatch) -> Mock:
-    """Return a mock ExporterConfig instance."""
-    mock = Mock()
-    monkeypatch.setattr(
-        "sia.factories.butler_type_factory.ExporterConfig", mock
-    )
-    return mock
-
-
-@pytest.fixture
-def mock_labeled_butler_factory(monkeypatch: pytest.MonkeyPatch) -> Mock:
-    """Return a mock LabeledButlerFactory instance."""
-    mock = Mock()
-    monkeypatch.setattr(
-        "sia.factories.butler_type_factory.LabeledButlerFactory", mock
-    )
-    return mock
-
-
-@pytest.fixture
-def mock_butler_config(monkeypatch: pytest.MonkeyPatch) -> Mock:
-    """Return a mock ButlerConfig instance."""
-    mock = Mock()
-    monkeypatch.setattr("sia.factories.butler_type_factory.ButlerConfig", mock)
-    return mock
-
-
-@pytest.fixture
-def mock_siav2_query() -> Iterator[MockButlerQueryService]:
-    """Mock Butler for testing."""
-    yield from patch_siav2_query()
-
-
-@pytest.fixture
-def mock_butler() -> Iterator[MockButler]:
-    """Mock Butler for testing."""
-    yield from patch_butler()
