@@ -6,7 +6,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
-from lsst.dax.obscore.siav2 import siav2_query
 from safir.dependencies.gafaelfawr import auth_dependency
 from safir.dependencies.http_client import http_client_dependency
 from safir.dependencies.logger import logger_dependency
@@ -206,12 +205,8 @@ async def query(
 
     # Otherwise, perform and return the query.
     query_service = context.factory.create_query_service()
-    votable = await query_service.run_query(
-        raw_params=params,
-        sia_query=siav2_query,
-        query_url=str(context.request.url),
-        user=user,
-    )
+    request_url = str(context.request.url)
+    votable = await query_service.run_query_votable(params, request_url, user)
     return Response(
         headers=headers,
         content=votable,

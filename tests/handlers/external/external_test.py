@@ -7,7 +7,6 @@ from httpx import AsyncClient
 
 from sia.config import config
 from sia.constants import RESULT_NAME
-from tests.support.butler import MockButler, MockButlerQueryService
 from tests.support.constants import EXCEPTION_MESSAGES
 from tests.support.validators import validate_votable_error
 
@@ -78,8 +77,6 @@ async def test_query_endpoint_mocker_get(
     expected_status: int,
     expected_content_type: str,
     expected_message: str | None,
-    mock_siav2_query: MockButlerQueryService,
-    mock_butler: MockButler,
 ) -> None:
     """Test ``GET /api/sia/query`` with valid parameters but use a Mocker
     for the Butler SIAv2 query.
@@ -138,8 +135,6 @@ async def test_query_endpoint_get(
     expected_status: int,
     expected_content_type: str,
     expected_message: str | None,
-    mock_siav2_query: MockButlerQueryService,
-    mock_butler: MockButler,
 ) -> None:
     response = await client.get(
         f"{config.path_prefix}/dp02/query?{query_params}"
@@ -203,8 +198,6 @@ async def test_query_endpoint_post(
     expected_status: int,
     expected_content_type: str,
     expected_message: str | None,
-    mock_siav2_query: MockButlerQueryService,
-    mock_butler: MockButler,
 ) -> None:
     """Test ``POST /api/sia/query`` with various parameters."""
     response = await client.post(
@@ -223,11 +216,8 @@ async def test_query_endpoint_post(
 
 @pytest.mark.asyncio
 async def test_query_maxrec_zero(
-    *,
     data: SiaData,
     client: AsyncClient,
-    mock_siav2_query: MockButlerQueryService,
-    mock_butler: MockButler,
 ) -> None:
     r = await client.get(
         f"{config.path_prefix}/dp02/query", params={"MAXREC": 0}

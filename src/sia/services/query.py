@@ -1,20 +1,20 @@
 """Run an SIA query and return the results as a VOTable."""
 
 import asyncio
+import io
 import time
 import uuid
 from collections.abc import Callable
 
 import astropy
 from lsst.daf.butler import Butler
-from lsst.dax.obscore import ExporterConfig
+from lsst.dax.obscore import ExporterConfig, siav2
 from safir.sentry import duration
 from structlog.stdlib import BoundLogger
 
 from ..events import Events, SIAQueryFailed, SIAQuerySucceeded
 from ..models.sia_query_params import SIAQueryParams
 from ..sentry import capturing_start_span
-from ..services.votable import VotableConverterService
 
 SIAv2QueryType = Callable[..., astropy.io.votable.tree.VOTableFile]
 
@@ -49,22 +49,15 @@ class QueryService:
         self._events = events
         self._logger = logger
 
-    async def run_query(
-        self,
-        *,
-        raw_params: SIAQueryParams,
-        sia_query: SIAv2QueryType,
-        query_url: str,
-        user: str,
+    async def run_query_votable(
+        self, raw_params: SIAQueryParams, query_url: str, user: str
     ) -> bytes:
-        """Process the SIAv2 query and generate a Response.
+        """Process the SIAv2 query and generate a VOTable.
 
         Parameters
         ----------
         raw_params
             Parameters for the SIAv2 query.
-        sia_query
-            The SIA query method to use.
         query_url
             URL the user sent the query to, which has to be reflected in the
             VOTable output.
@@ -85,8 +78,6 @@ class QueryService:
         logger = self._logger.bind(query_id=query_id, user=user)
         logger.info("SIA query started", params=params)
 
-        loop = asyncio.get_running_loop()
-
         with capturing_start_span("sia_query") as span:
             span.set_data("query", params)
             span.set_data("query_id", query_id)
@@ -97,15 +88,13 @@ class QueryService:
                 logger.info("Starting SIA query execution")
 
                 # Execute the query
-                table_as_votable = await loop.run_in_executor(
-                    None,
-                    lambda: sia_query(
-                        self._butler,
-                        self._obscore_config,
-                        params,
-                        query_url=query_url,
-                        query_string=query_string,
-                    ),
+                table_as_votable = await asyncio.to_thread(
+                    siav2.siav2_query,
+                    self._butler,
+                    self._obscore_config,
+                    params,
+                    query_url=query_url,
+                    query_string=query_string,
                 )
 
                 query_duration = time.time() - query_start_time
@@ -135,13 +124,16 @@ class QueryService:
                 )
                 raise
 
-            conversion_start_time = time.time()
-            # Convert the result to a string
-            result = await loop.run_in_executor(
-                None,
-                lambda: VotableConverterService(table_as_votable).to_bytes(),
-            )
+            def to_xml() -> bytes:
+                with io.BytesIO() as output:
+                    table_as_votable.to_xml(output)
+                    return output.getvalue()
 
+            # Convert the result to bytes. Run this in a thread pool in the
+            # hope that enough of the code drops the GIL that it doesn't block
+            # the main execution thread.
+            conversion_start_time = time.time()
+            result = await asyncio.to_thread(to_xml)
             conversion_duration = time.time() - conversion_start_time
 
         total_duration = time.time() - start_time
