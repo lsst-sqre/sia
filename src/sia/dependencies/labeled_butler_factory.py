@@ -35,8 +35,7 @@ class LabeledButlerFactoryDependency:
             URL of the Butler configuration for that collection or `None` if
             the collection is unknown.
         """
-        if not self._repositories:
-            await self._build_butler_factory()
+        await self._build_butler_factory()
         return self._repositories.get(name)
 
     async def _build_butler_factory(self) -> LabeledButlerFactory:
