@@ -33,11 +33,6 @@ butlerDataCollections
 
     Example: ``"REMOTE"``
 
-**datalink_url** (optional)
-    An HTTP path to overwrite the Datalink endpoint in the obscore repository with.
-
-    Example: ``"https://data-dev.lsst.cloud/api/datalink/links?ID=butler%3A//dp02/{id}"``.
-
 Ingresses
 ==================
 
