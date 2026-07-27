@@ -62,8 +62,10 @@ async def test_get_index(client: AsyncClient) -> None:
             None,
         ),
         (
-            "POS=RANGE+0+360.0+-2.0+2.0&TIME=-Inf++Inf&DP_TYPE=image&dp_type"
-            "=cube",
+            (
+                "POS=RANGE+0+360.0+-2.0+2.0&TIME=-Inf++Inf&DP_TYPE=image"
+                "&dp_type=cube"
+            ),
             200,
             "application/x-votable+xml",
             None,
