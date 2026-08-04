@@ -17,7 +17,6 @@ from structlog.stdlib import BoundLogger
 from ..events import Events
 from ..factory import Factory
 from .labeled_butler_factory import labeled_butler_factory_dependency
-from .obscore_configs import obscore_config_dependency
 
 __all__ = [
     "ContextDependency",
@@ -81,20 +80,15 @@ class ContextDependency:
         """Create a per-request context and return it."""
         if not self._events:
             raise RuntimeError("ContextDependency not initialized")
-
+        factory = Factory(
+            logger=logger,
+            labeled_butler_factory=await labeled_butler_factory_dependency(),
+        )
         return RequestContext(
             request=request,
             logger=logger,
-            factory=await self.create_factory(logger=logger),
+            factory=factory,
             events=self._events,
-        )
-
-    async def create_factory(self, logger: BoundLogger) -> Factory:
-        """Create a factory for use outside a request context."""
-        return Factory(
-            logger=logger,
-            labeled_butler_factory=await labeled_butler_factory_dependency(),
-            obscore_configs=await obscore_config_dependency(),
         )
 
     async def initialize(self, event_manager: EventManager) -> None:

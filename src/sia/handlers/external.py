@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
+from lsst.dax.obscore import ExporterConfig
 from lsst.dax.obscore.siav2 import siav2_query
 from safir.dependencies.gafaelfawr import (
     auth_delegated_token_dependency,
@@ -20,6 +21,7 @@ from vo_models.vosi.capabilities.models import VOSICapabilities
 from ..config import config
 from ..dependencies.context import RequestContext, context_dependency
 from ..dependencies.data_collections import validate_collection
+from ..dependencies.obscore_configs import obscore_config_dependency
 from ..dependencies.query_params import get_sia_params_dependency
 from ..models.data_collections import ButlerDataCollection
 from ..models.index import Index
@@ -184,6 +186,9 @@ async def get_capabilities(
 async def query(
     *,
     context: Annotated[RequestContext, Depends(context_dependency)],
+    obscore_config: Annotated[
+        ExporterConfig, Depends(obscore_config_dependency)
+    ],
     collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
     raw_params: Annotated[SIAQueryParams, Depends(get_sia_params_dependency)],
     user: Annotated[str, Depends(auth_dependency)],
@@ -198,4 +203,5 @@ async def query(
         events=context.events,
         user=user,
         request=context.request,
+        obscore_config=obscore_config,
     )
