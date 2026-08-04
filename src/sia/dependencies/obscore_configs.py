@@ -1,6 +1,5 @@
 """Dependency class for loading the Obscore configs."""
 
-import contextlib
 from typing import Annotated
 from urllib.parse import urlparse, urlunparse
 
@@ -70,7 +69,7 @@ class ObscoreConfigDependency:
             if new_url.port:
                 new_netloc = f"{new_netloc}:{new_url.port}"
             for settings in exporter_config.dataset_types.values():
-                with contextlib.suppress(AttributeError):
+                if settings.datalink_url_fmt:
                     old_url = urlparse(str(settings.datalink_url_fmt))
                     merged_url = old_url._replace(
                         scheme=new_url.scheme,
