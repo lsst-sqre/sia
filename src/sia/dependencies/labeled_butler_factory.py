@@ -48,9 +48,9 @@ class LabeledButlerFactoryDependency:
         repositories = await self._discovery.butler_repositories()
         if self._butler_factory and repositories == self._repositories:
             return self._butler_factory
-        for collection in config.butler_data_collections:
-            if collection.name not in repositories:
-                msg = f"No Butler configuration found for {collection.name}"
+        for dataset in config.datasets:
+            if dataset not in repositories:
+                msg = f"No Butler configuration found for {dataset}"
                 raise FatalFaultError(msg)
         self._butler_factory = LabeledButlerFactory(repositories)
         self._repositories = repositories

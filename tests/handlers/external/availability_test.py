@@ -46,3 +46,9 @@ async def test_availability_failure(
     r = await client.get(f"{config.path_prefix}/dp02/availability")
     assert r.status_code == 200
     data.assert_text_matches(r.text, "responses/availability-404.xml")
+
+
+@pytest.mark.asyncio
+async def test_availability_unknown(client: AsyncClient) -> None:
+    r = await client.get(f"{config.path_prefix}/dp1/availability")
+    assert r.status_code == 404

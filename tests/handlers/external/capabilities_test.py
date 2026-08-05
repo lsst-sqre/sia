@@ -19,3 +19,9 @@ async def test_capabilities(data: SiaData, client: AsyncClient) -> None:
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/xml"
     data.assert_text_matches(r.text, "responses/capabilities.xml")
+
+
+@pytest.mark.asyncio
+async def test_capabilities_unknown(client: AsyncClient) -> None:
+    r = await client.get(f"{config.path_prefix}/dp1/capabilities")
+    assert r.status_code == 404
