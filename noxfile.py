@@ -96,6 +96,7 @@ def test(session: nox.Session) -> None:
         env={
             "REPERTOIRE_BASE_URL": "https://example.com/repertoire",
             "SIA_DATASETS": '["dp02"]',
+            "SIA_IVOID_FORMAT": "ivo://org.rubinobs/{dataset}/sia",
             "SIA_OBSCORE_CONFIG": '{"dp02":"https://example.com/dp02.yaml"}',
             "METRICS_APPLICATION": "sia",
             "METRICS_ENABLED": "false",

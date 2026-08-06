@@ -189,12 +189,11 @@ async def query(
     # If MAXREC is set to 0, this is a special case that should return a
     # self-description response instead of performing a query.
     if params.maxrec == 0:
+        name = collection_name
         context.logger.info("Returning self-description response (MACREC=0)")
         description_service = context.factory.create_self_description_service()
-        description = await description_service.get_description()
-        query_url = context.request.url_for(
-            "query", collection_name=collection_name
-        )
+        description = await description_service.get_description(name)
+        query_url = context.request.url_for("query", collection_name=name)
         return _TEMPLATES.TemplateResponse(
             context.request,
             "self-description.xml",

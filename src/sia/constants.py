@@ -1,15 +1,11 @@
 """Constants for the SIA service."""
 
 __all__ = [
-    "BASE_RESOURCE_IDENTIFIER",
     "DATALINK_VERSION",
     "RESPONSEFORMATS",
     "RESULT_NAME",
     "SINGLE_PARAMS",
 ]
-
-BASE_RESOURCE_IDENTIFIER = "ivo://rubin/"
-"""The base resource identifier for any rubin SIA service."""
 
 DATALINK_VERSION = "datalink-links-1.1"
 """Version of the DataLink links service to request from service discovery."""
