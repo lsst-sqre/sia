@@ -5,7 +5,7 @@ import asyncio
 from lsst.daf.butler import Butler
 from lsst.dax.obscore import ExporterConfig
 
-from ..constants import BASE_RESOURCE_IDENTIFIER
+from ..config import config
 from ..models.description import SelfDescription
 from ..models.sia_query_params import BandInfo
 
@@ -31,8 +31,13 @@ class SelfDescriptionService:
         self._butler = butler
         self._obscore_config = obscore_config
 
-    async def get_description(self) -> SelfDescription:
+    async def get_description(self, collection_name: str) -> SelfDescription:
         """Return self-description metadata for the SIAv2 service.
+
+        Parameters
+        ----------
+        collection_name
+            Name of the collection.
 
         Returns
         -------
@@ -55,11 +60,12 @@ class SelfDescriptionService:
             for c in self._obscore_config.dataset_types.values()
             if c.dataproduct_subtype is not None
         }
+        identifier = config.ivoid_format.format(dataset=collection_name)
 
         return SelfDescription(
             instruments=[i.name for i in instruments],
             collections=[label] if label else [],
-            resource_identifier=f"{BASE_RESOURCE_IDENTIFIER}/{label}",
+            resource_identifier=identifier,
             facility_name=self._obscore_config.facility_name.strip(),
             bands=bands,
             dataproduct_subtypes=list(subtypes),

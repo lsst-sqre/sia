@@ -26,6 +26,17 @@ class Config(BaseSettings):
         ),
     ]
 
+    ivoid_format: str = Field(
+        ...,
+        title="Format for service IVOID",
+        description=(
+            "A Python format string used to generate the IVOID returned in"
+            " the service self-description. This format string must have"
+            " one variable, dataset, which will be replaced with the short"
+            " label of the dataset."
+        ),
+    )
+
     log_level: LogLevel = Field(
         LogLevel.INFO, title="Log level of the application's logger"
     )
