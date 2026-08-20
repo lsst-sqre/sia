@@ -18,7 +18,9 @@ from structlog.stdlib import BoundLogger
 
 from ..events import Events
 from ..factory import Factory
+from ..models.data_collections import ButlerDataCollection
 from .butler import butler_dependency
+from .data_collections import validate_collection
 from .obscore_configs import obscore_config_dependency
 
 __all__ = [
@@ -43,6 +45,9 @@ class RequestContext:
 
     factory: Factory
     """The component factory."""
+
+    collection: ButlerDataCollection
+    """Name of the Butler collection specified in the request."""
 
     events: Events
     """Events publisher."""
@@ -78,6 +83,9 @@ class ContextDependency:
         self,
         *,
         request: Request,
+        collection: Annotated[
+            ButlerDataCollection, Depends(validate_collection)
+        ],
         butler: Annotated[Butler, Depends(butler_dependency)],
         obscore_config: Annotated[
             ExporterConfig, Depends(obscore_config_dependency)
@@ -91,6 +99,7 @@ class ContextDependency:
         return RequestContext(
             request=request,
             factory=factory,
+            collection=collection,
             events=self._events,
             logger=logger,
         )

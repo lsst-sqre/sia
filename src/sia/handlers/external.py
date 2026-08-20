@@ -179,30 +179,27 @@ async def get_capabilities(
 )
 async def query(
     *,
-    collection_name: str,
     context: Annotated[RequestContext, Depends(context_dependency)],
     butler: Annotated[Butler, Depends(butler_dependency)],
     obscore_config: Annotated[
         ExporterConfig, Depends(obscore_config_dependency)
     ],
-    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
     params: Annotated[SIAQueryParams, Depends(get_sia_params_dependency)],
     user: Annotated[str, Depends(auth_dependency)],
 ) -> Response:
     # If MAXREC is set to 0, this is a special case that should return a
     # self-description response instead of performing a query.
     if params.maxrec == 0:
-        context.logger.info("Returning self-description response (MACREC=0)")
+        context.logger.info("Returning self-description response (MAXREC=0)")
         description_service = context.factory.create_self_description_service()
         description = await description_service.get_description()
-        query_url = context.request.url_for(
-            "query", collection_name=collection.name
-        )
+        collection = context.collection.name
+        url = context.request.url_for("query", collection_name=collection)
         filename = f"{RESULT_NAME}.xml"
         return _TEMPLATES.TemplateResponse(
             context.request,
             "self-description.xml",
-            {"access_url": query_url, **description.to_dict()},
+            {"access_url": url, **description.to_dict()},
             headers={
                 "Content-Disposition": f"attachment; filename={filename}",
                 "Content-Type": "application/x-votable+xml",
