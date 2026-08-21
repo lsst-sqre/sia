@@ -56,8 +56,13 @@ class ButlerFactoryDependency:
 
         Returns
         -------
-        str or None
+        str
             URL of the Butler configuration for that collection.
+
+        Raises
+        ------
+        UsageFaultError
+            Raised if the collection was not found in service discovery.
         """
         await self._build_butler_factory(discovery)
         if collection_name not in self._repositories:

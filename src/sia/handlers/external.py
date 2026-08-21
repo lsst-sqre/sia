@@ -94,6 +94,7 @@ async def get_index(
 )
 async def get_availability(
     butler_url: Annotated[str, Depends(butler_factory_dependency.butler_url)],
+    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
     http_client: Annotated[AsyncClient, Depends(http_client_dependency)],
 ) -> Response:
     availability_service = AvailabilityService(http_client)
