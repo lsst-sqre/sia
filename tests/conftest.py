@@ -105,5 +105,5 @@ def mock_discovery(
     data: SiaData, respx_mock: respx.Router, monkeypatch: pytest.MonkeyPatch
 ) -> Discovery:
     monkeypatch.setenv("REPERTOIRE_BASE_URL", "https://example.com/repertoire")
-    path = data.path("discovery.json")
+    path = data.path("discovery/standard.json")
     return register_mock_discovery(respx_mock, path)
