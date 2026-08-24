@@ -31,7 +31,7 @@ class Config(BaseSettings):
     )
 
     log_profile: Profile = Field(
-        Profile.development, title="Application logging profile"
+        Profile.production, title="Application logging profile"
     )
 
     metrics: MetricsConfiguration = Field(

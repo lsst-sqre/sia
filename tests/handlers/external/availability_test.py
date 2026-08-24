@@ -2,11 +2,13 @@
 
 import pytest
 import respx
-from httpx import AsyncClient, Response
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient, Response
 from rubin.repertoire import Discovery
 
 from sia.config import config
 
+from ...support.constants import TEST_BASE_URL
 from ...support.data import SiaData
 
 
@@ -23,6 +25,26 @@ async def test_availability(
     assert butler_url
     respx_mock.get(str(butler_url)).mock(return_value=Response(200))
 
+    r = await client.get(f"{config.path_prefix}/dp02/availability")
+    assert r.status_code == 200
+    data.assert_text_matches(r.text, "responses/availability-success.xml")
+
+
+@pytest.mark.asyncio
+async def test_availability_anonymous(
+    *,
+    data: SiaData,
+    app: FastAPI,
+    mock_discovery: Discovery,
+    respx_mock: respx.Router,
+) -> None:
+    """Test the availability endpoint without authentication."""
+    butler_url = mock_discovery.datasets["dp02"].butler_config
+    assert butler_url
+    respx_mock.get(str(butler_url)).mock(return_value=Response(200))
+
+    transport = ASGITransport(app=app)
+    client = AsyncClient(transport=transport, base_url=TEST_BASE_URL)
     r = await client.get(f"{config.path_prefix}/dp02/availability")
     assert r.status_code == 200
     data.assert_text_matches(r.text, "responses/availability-success.xml")
