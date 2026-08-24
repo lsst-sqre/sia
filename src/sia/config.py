@@ -1,8 +1,9 @@
 """Configuration definition."""
 
 from typing import Annotated, Self
+from urllib.parse import urlsplit
 
-from pydantic import Field, HttpUrl, model_validator
+from pydantic import Field, HttpUrl, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from safir.logging import LogLevel, Profile
 from safir.metrics import MetricsConfiguration, metrics_configuration_factory
@@ -66,6 +67,20 @@ class Config(BaseSettings):
     slack_webhook: Annotated[
         HttpUrl | None, Field(title="Slack webhook for exception reporting")
     ] = None
+
+    @field_validator("ivoid_format")
+    @classmethod
+    def _validate_ivoid_format(cls, v: str) -> str:
+        try:
+            uri = v.format(dataset="dataset")
+        except Exception as e:
+            msg = f"Invalid ivoid_format: {type(e).__name__}: {e!s}"
+            raise ValueError(msg) from e
+        parsed_uri = urlsplit(uri)
+        if parsed_uri.scheme != "ivo":
+            msg = f"ivoid_format scheme must be ivo, not {parsed_uri.scheme}"
+            raise ValueError(msg)
+        return v
 
     @model_validator(mode="after")
     def _validate_obscore_config(self) -> Self:
