@@ -189,9 +189,9 @@ async def query(
     if params.maxrec == 0:
         context.logger.info("Returning self-description response (MAXREC=0)")
         description_service = context.factory.create_self_description_service()
-        description = await description_service.get_description()
-        collection = context.collection.name
-        url = context.request.url_for("query", collection_name=collection)
+        name = context.collection.name
+        description = await description_service.get_description(name)
+        url = context.request.url_for("query", collection_name=name)
         return _TEMPLATES.TemplateResponse(
             context.request,
             "self-description.xml",

@@ -112,7 +112,7 @@
     <PARAM name="accessURL" datatype="char" arraysize="*"
            value="https://example.com/api/sia/dp02/query"/>
     <PARAM name="resourceIdentifier" datatype="char" arraysize="*"
-           value="ivo://rubin//LSST.DP02"/>
+           value="ivo://org.rubinobs/dp02/sia"/>
   </RESOURCE>
   <RESOURCE type="results">
     <INFO name="QUERY_STATUS" value="OVERFLOW"/>
