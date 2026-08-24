@@ -1,7 +1,7 @@
 """Dependency class for loading the Obscore configs."""
 
 from typing import Annotated
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlsplit, urlunsplit
 
 from fastapi import Depends
 from lsst.daf.butler import ButlerConfig
@@ -64,19 +64,19 @@ class ObscoreConfigDependency:
         # query arguments, but replace the rest of the URL with the URL from
         # service discovery.
         if datalink_url:
-            new_url = urlparse(datalink_url)
+            new_url = urlsplit(datalink_url)
             new_netloc = new_url.hostname or ""
             if new_url.port:
                 new_netloc = f"{new_netloc}:{new_url.port}"
             for settings in exporter_config.dataset_types.values():
                 if settings.datalink_url_fmt:
-                    old_url = urlparse(str(settings.datalink_url_fmt))
+                    old_url = urlsplit(str(settings.datalink_url_fmt))
                     merged_url = old_url._replace(
                         scheme=new_url.scheme,
                         netloc=new_netloc,
                         path=new_url.path,
                     )
-                    settings.datalink_url_fmt = urlunparse(merged_url)
+                    settings.datalink_url_fmt = urlunsplit(merged_url)
 
         # Update the cache and return the results.
         self._cache[name] = exporter_config
