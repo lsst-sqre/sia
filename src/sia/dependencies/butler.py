@@ -10,6 +10,7 @@ from safir.dependencies.gafaelfawr import (
     auth_logger_dependency,
 )
 from safir.dependencies.http_client import http_client_dependency
+from safir.dependencies.logger import logger_dependency
 from structlog.stdlib import BoundLogger
 
 from ..config import config
@@ -46,13 +47,15 @@ class ButlerFactoryDependency:
         self,
         collection_name: str,
         discovery: Annotated[DiscoveryClient, Depends(discovery_dependency)],
-        logger: Annotated[BoundLogger, Depends(auth_logger_dependency)],
+        logger: Annotated[BoundLogger, Depends(logger_dependency)],
     ) -> str:
         """Return the Butler URL for a given collection name.
 
         This is used by the availability checker as a FastAPI dependency to
         get a Butler URL that can be probed to see if the Butler server is
-        running.
+        running. Availability is accessible to unauthenticated users, so this
+        method and its dependencies must not require Gafaelfawr
+        authentication.
 
         Parameters
         ----------
@@ -117,8 +120,7 @@ class ButlerFactoryDependency:
                 if self._butler_factory:
                     logger.warning("Using cached Butler configuration")
                     return self._butler_factory
-                else:
-                    raise FatalFaultError(msg)
+                raise FatalFaultError(msg)
 
         # Create the new Butler factory and update the cache.
         self._butler_factory = LabeledButlerFactory(repositories)

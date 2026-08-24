@@ -15,6 +15,7 @@ from sia import main
 from sia.config import Config, config
 
 from .support.butler import MockButler, patch_butler, patch_siav2_query
+from .support.constants import TEST_BASE_URL
 from .support.data import SiaData
 
 
@@ -85,7 +86,7 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient]:
     """Return an ``httpx.AsyncClient`` configured to talk to the test app."""
     async with AsyncClient(
         transport=ASGITransport(app=app),
-        base_url="https://example.com/",
+        base_url=TEST_BASE_URL,
         headers={
             "X-Auth-Request-Token": "sometoken",
             "X-Auth-Request-User": "user",
