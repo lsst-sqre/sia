@@ -7,6 +7,25 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-2.0.0'></a>
+## 2.0.0 (2026-08-25)
+
+### Backwards-incompatible changes
+
+- Rework the SIA dataset configuration. Drop the `config.butlerDataCollections` parameter and replace it with `config.datasets`, which lists the enabled datasets, and `config.obscoreConfig`, which maps dataset names to ObsCore exporter configuration URLs. All other information is retrieved from service discovery or from the ObsCore configuration.
+- Remove support for direct Butler. Only the remote client/server Butler is now supported.
+
+### New features
+
+- Get the DataLink links URL for a given Butler dataset from service discovery rather than requiring it be set in the SIA configuration.
+- Get the Butler configuration URL for a given dataset from service discovery rather than requiring it be set in the SIA configuration. Refresh the Butler configuration if the available datasets change.
+- Allow configuration of the format used for the IVOID in the service self-description, since this should vary by Phalanx environment.
+- Publish multi-platform images that support both linux/amd64 and linux/arm64.
+
+### Other changes
+
+- SIA now uses [nox](https://nox.thea.codes/en/stable/index.html) as the build system for development and testing instead of tox.
+
 <a id='changelog-1.3.1'></a>
 ## 1.3.1 (2026-04-16)
 
@@ -44,7 +63,7 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 ## 1.1.0 (2025-09-23)
 
-- DM-51656: Apply changes to support sending the query_url and query_string for Data Origin
+- Include `query_url` and `query_string` in the data origin of results.
 
 <a id='changelog-1.0.1'></a>
 
