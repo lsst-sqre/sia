@@ -11,6 +11,7 @@ from safir.dependencies.http_client import http_client_dependency
 from safir.dependencies.logger import logger_dependency
 from safir.metadata import get_metadata
 from safir.models import ErrorModel
+from safir.slack.webhook import SlackRouteErrorHandler
 from structlog.stdlib import BoundLogger
 from vo_models.vosi.availability import Availability
 from vo_models.vosi.capabilities.models import VOSICapabilities
@@ -31,7 +32,7 @@ _TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 __all__ = ["external_router", "get_index"]
 
-external_router = APIRouter()
+external_router = APIRouter(route_class=SlackRouteErrorHandler)
 """FastAPI router for all external handlers."""
 
 
