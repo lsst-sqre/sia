@@ -3,24 +3,17 @@
 from typing import Annotated
 
 from fastapi import Depends
-from lsst.daf.butler import Butler, LabeledButlerFactory
+from lsst.daf.butler import LabeledButlerFactory
 from rubin.repertoire import DiscoveryClient, discovery_dependency
-from safir.dependencies.gafaelfawr import (
-    auth_delegated_token_dependency,
-    auth_logger_dependency,
-)
+from safir.dependencies.gafaelfawr import auth_logger_dependency
 from safir.dependencies.http_client import http_client_dependency
 from safir.dependencies.logger import logger_dependency
 from structlog.stdlib import BoundLogger
 
-from ..config import config
-from ..exceptions import FatalFaultError, UsageFaultError
-from ..models.data_collections import ButlerDataCollection
-from .data_collections import validate_collection
+from ..exceptions import UsageFaultError
 
 __all__ = [
     "ButlerFactoryDependency",
-    "butler_dependency",
     "butler_factory_dependency",
 ]
 
@@ -108,21 +101,6 @@ class ButlerFactoryDependency:
         repositories = await discovery.butler_repositories()
         if self._butler_factory and repositories == self._repositories:
             return self._butler_factory
-
-        # Check the new configuration for consistency. We don't know what
-        # dataset will be used by a future call that uses the cached factory,
-        # so we need all of them to be configured properly. If they aren't,
-        # log an error and try to use a cached copy.
-        for dataset in config.datasets:
-            if dataset not in repositories:
-                msg = f"No Butler configuration found for '{dataset}'"
-                logger.error(msg)
-                if self._butler_factory:
-                    logger.warning("Using cached Butler configuration")
-                    return self._butler_factory
-                raise FatalFaultError(msg)
-
-        # Create the new Butler factory and update the cache.
         self._butler_factory = LabeledButlerFactory(repositories)
         self._repositories = repositories
         return self._butler_factory
@@ -130,20 +108,3 @@ class ButlerFactoryDependency:
 
 butler_factory_dependency = ButlerFactoryDependency()
 """Dependency that returns a Butler factory that knows about dataset labels."""
-
-
-def butler_dependency(
-    butler_factory: Annotated[
-        LabeledButlerFactory, Depends(butler_factory_dependency)
-    ],
-    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
-    token: Annotated[str, Depends(auth_delegated_token_dependency)],
-) -> Butler:
-    """Construct a Butler for a given collection and user token.
-
-    This function should be sync rather than async in case constructing a
-    Butler requires network I/O. FastAPI will then run it in a thread pool
-    rather than blocking the main process.
-    """
-    name = collection.name
-    return butler_factory.create_butler(label=name, access_token=token)

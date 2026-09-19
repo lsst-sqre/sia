@@ -2,6 +2,33 @@
   "datasets": {
     "dp02": {
       "butler_config": "https://example.com/api/butler/repo/dp02/butler.yaml",
+      "obscore_config": "https://example.com/dp02.yaml",
+      "services": {
+        "datalink": {
+          "url": "https://example.com/links",
+          "versions": {
+            "datalink-links-1.1": {
+              "url": "https://example.com/links"
+            }
+          }
+        }
+      }
+    },
+    "dp1": {
+      "butler_config": "https://example.com/api/butler/repo/dp1/butler.yaml",
+      "services": {
+        "datalink": {
+          "url": "https://example.com/links",
+          "versions": {
+            "datalink-links-1.1": {
+              "url": "https://example.com/links"
+            }
+          }
+        }
+      }
+    },
+    "dp2": {
+      "obscore_config": "https://example.com/dr2.yaml",
       "services": {
         "datalink": {
           "url": "https://example.com/links",

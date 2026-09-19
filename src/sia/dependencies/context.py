@@ -10,16 +10,19 @@ from dataclasses import dataclass
 from typing import Annotated, Any
 
 from fastapi import Depends, Request
-from lsst.daf.butler import Butler
+from lsst.daf.butler import Butler, LabeledButlerFactory
 from lsst.dax.obscore import ExporterConfig
-from safir.dependencies.gafaelfawr import auth_logger_dependency
+from safir.dependencies.gafaelfawr import (
+    auth_delegated_token_dependency,
+    auth_logger_dependency,
+)
 from safir.metrics import EventManager
 from structlog.stdlib import BoundLogger
 
 from ..events import Events
 from ..factory import Factory
 from ..models.data_collections import ButlerDataCollection
-from .butler import butler_dependency
+from .butler import butler_factory_dependency
 from .data_collections import validate_collection
 from .obscore_configs import obscore_config_dependency
 
@@ -28,6 +31,23 @@ __all__ = [
     "RequestContext",
     "context_dependency",
 ]
+
+
+def _butler_dependency(
+    butler_factory: Annotated[
+        LabeledButlerFactory, Depends(butler_factory_dependency)
+    ],
+    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
+    token: Annotated[str, Depends(auth_delegated_token_dependency)],
+) -> Butler:
+    """Construct a Butler for a given collection and user token.
+
+    This function should be sync rather than async in case constructing a
+    Butler requires network I/O. FastAPI will then run it in a thread pool
+    rather than blocking the main process.
+    """
+    name = collection.name
+    return butler_factory.create_butler(label=name, access_token=token)
 
 
 @dataclass(slots=True)
@@ -83,7 +103,7 @@ class ContextDependency:
         collection: Annotated[
             ButlerDataCollection, Depends(validate_collection)
         ],
-        butler: Annotated[Butler, Depends(butler_dependency)],
+        butler: Annotated[Butler, Depends(_butler_dependency)],
         obscore_config: Annotated[
             ExporterConfig, Depends(obscore_config_dependency)
         ],

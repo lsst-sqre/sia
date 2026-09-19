@@ -1,10 +1,9 @@
 """Data collection models."""
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Annotated
 
-from pydantic import Field, HttpUrl
+from pydantic import Field
 
 
 @dataclass
@@ -12,7 +11,7 @@ class ButlerDataCollection:
     """Model to represent a Remote Butler data collection."""
 
     config: Annotated[
-        HttpUrl | Path,
+        str,
         Field(
             title="ObsCore configuration",
             description="Config path or URL to obscore config for collection",
