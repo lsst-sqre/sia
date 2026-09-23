@@ -12,7 +12,6 @@ from httpx import ASGITransport, AsyncClient
 from rubin.repertoire import Discovery, register_mock_discovery
 
 from sia import main
-from sia.config import Config, config
 
 from .support.butler import MockButler, patch_butler, patch_siav2_query
 from .support.constants import TEST_BASE_URL
@@ -26,14 +25,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="Overwrite expected test output with current results",
     )
-
-
-@pytest.fixture(autouse=True)
-def _config(data: SiaData, monkeypatch: pytest.MonkeyPatch) -> Config:
-    """Override ObsCore configuration to use test data."""
-    obscore_config = {"dp02": str(data.path("config/dp02.yaml"))}
-    monkeypatch.setattr(config, "obscore_config", obscore_config)
-    return config
 
 
 @pytest.fixture(autouse=True)
@@ -106,5 +97,8 @@ def mock_discovery(
     data: SiaData, respx_mock: respx.Router, monkeypatch: pytest.MonkeyPatch
 ) -> Discovery:
     monkeypatch.setenv("REPERTOIRE_BASE_URL", "https://example.com/repertoire")
-    path = data.path("discovery/standard.json")
-    return register_mock_discovery(respx_mock, path)
+    discovery = data.read_pydantic(Discovery, "discovery/standard")
+    obscore_path = data.path("config/dp02.yaml")
+    discovery.datasets["dp02"].obscore_config = str(obscore_path)
+    discovery.datasets["dp2"].obscore_config = str(obscore_path)
+    return register_mock_discovery(respx_mock, discovery)

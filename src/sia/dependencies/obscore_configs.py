@@ -1,5 +1,6 @@
 """Dependency class for loading the Obscore configs."""
 
+from dataclasses import dataclass
 from typing import Annotated
 from urllib.parse import urlsplit, urlunsplit
 
@@ -34,12 +35,31 @@ async def datalink_url_dependency(
     )
 
 
+@dataclass
+class _CachedExporterConfig:
+    """A cached ObsCore exporter config and its inputs for validation."""
+
+    config_url: str
+    """URL to the ObsCore config that was used."""
+
+    datalink_url: str | None
+    """URL to the DataLink service that was used."""
+
+    config: ExporterConfig
+    """Cached ObsCore exporter config."""
+
+    def is_stale(self, config_url: str, datalink_url: str | None) -> bool:
+        """Check whether the cached config is stale because inputs changed."""
+        return not (
+            self.config_url == config_url and self.datalink_url == datalink_url
+        )
+
+
 class ObscoreConfigDependency:
     """Retrieve ObsCore exporter configuration for a collection."""
 
     def __init__(self) -> None:
-        self._cache: dict[str, ExporterConfig] = {}
-        self._datalink_urls: dict[str, str | None] = {}
+        self._cache: dict[str, _CachedExporterConfig] = {}
 
     def __call__(
         self,
@@ -50,9 +70,9 @@ class ObscoreConfigDependency:
     ) -> ExporterConfig:
         """Get the ObsCore exporter configuration for a collection."""
         name = collection.name
-        exporter_config = self._cache.get(name)
-        if exporter_config and self._datalink_urls.get(name) == datalink_url:
-            return exporter_config
+        cached = self._cache.get(name)
+        if cached and not cached.is_stale(collection.config, datalink_url):
+            return cached.config
 
         # Fetch the ObsCore configuration and create the appropriate model.
         config_data = ButlerConfig(str(collection.config))
@@ -79,8 +99,11 @@ class ObscoreConfigDependency:
                     settings.datalink_url_fmt = urlunsplit(merged_url)
 
         # Update the cache and return the results.
-        self._cache[name] = exporter_config
-        self._datalink_urls[name] = datalink_url
+        self._cache[name] = _CachedExporterConfig(
+            config_url=collection.config,
+            datalink_url=datalink_url,
+            config=exporter_config,
+        )
         return exporter_config
 
 

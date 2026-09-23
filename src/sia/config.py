@@ -1,9 +1,9 @@
 """Configuration definition."""
 
-from typing import Annotated, Self
+from typing import Annotated
 from urllib.parse import urlsplit
 
-from pydantic import Field, HttpUrl, field_validator, model_validator
+from pydantic import Field, HttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from safir.logging import LogLevel, Profile
 from safir.metrics import MetricsConfiguration, metrics_configuration_factory
@@ -15,17 +15,6 @@ class Config(BaseSettings):
     """Configuration for sia."""
 
     model_config = SettingsConfigDict(env_prefix="SIA_", case_sensitive=False)
-
-    datasets: Annotated[
-        list[str],
-        Field(
-            title="Supported datasets",
-            description=(
-                "Only queries against the listed datasets are supported"
-            ),
-            min_length=1,
-        ),
-    ]
 
     ivoid_format: str = Field(
         ...,
@@ -54,14 +43,6 @@ class Config(BaseSettings):
 
     name: str = Field("sia", title="Name of application")
 
-    obscore_config: Annotated[
-        dict[str, HttpUrl],
-        Field(
-            title="ObsCore configuration",
-            description="Mapping of dataset label to ObsCore configuration",
-        ),
-    ]
-
     path_prefix: str = Field("/api/sia", title="URL prefix for application")
 
     slack_webhook: Annotated[
@@ -81,15 +62,6 @@ class Config(BaseSettings):
             msg = f"ivoid_format scheme must be ivo, not {parsed_uri.scheme}"
             raise ValueError(msg)
         return v
-
-    @model_validator(mode="after")
-    def _validate_obscore_config(self) -> Self:
-        """Every dataset must have an ObsCore configuration."""
-        for dataset in self.datasets:
-            if not self.obscore_config.get(dataset):
-                msg = f"No ObsCore configuration for dataset {dataset}"
-                raise ValueError(msg)
-        return self
 
 
 config = Config()

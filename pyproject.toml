@@ -32,7 +32,7 @@ dependencies = [
     "pydantic-xml",
     "python-multipart",
     "requests",
-    "rubin-repertoire>=2",
+    "rubin-repertoire>=3",
     "safir[kafka]>=14.1.2",
     "sentry-sdk>=2",
     "structlog",
