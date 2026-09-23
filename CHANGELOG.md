@@ -7,6 +7,17 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-3.0.0'></a>
+## 3.0.0 (2026-09-22)
+
+### Backwards-incompatible changes
+
+- Fully rely on service discovery for configuration. Obtain the URL for the ObsCore exporter configuration from service discovery. Serve any dataset that has both a Butler config and an ObsCore exporter config in service discovery and drop the explicit configuration of which collections to serve.
+
+### New features
+
+- Report uncaught exceptions to Slack if a Slack webhook is configured.
+
 <a id='changelog-2.0.0'></a>
 ## 2.0.0 (2026-08-25)
 
