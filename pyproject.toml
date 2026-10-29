@@ -65,7 +65,7 @@ dev = [
     "uv",
 ]
 docs = [
-    "documenteer[guide]>2.0",
+    "documenteer[guide]==2.5.0b4",
     "scriv",
     "sphinx-prompt==1.9.0",
 ]
